@@ -5,16 +5,92 @@ date: "`r format(Sys.time(), '%d.%m.%Y')`"
 output: html_document
 ---
 # Expressions for the log likelihood, the score function and the Fisher information 
+For the first part of this exercise we will derive expressions for the log likelihood, the score function and the Fisher information for the binary regression model with grouped data and the logit choice of link function.
 
-## The log likelihood function
+If some of the covariate vectors $x_i$ in the design matrix $X$ in a regression model is identical, the data can be grouped. We then have $n_i$ replicates of vector $x_i$ where $i = \{1,2,...,G\}.$ For grouped binary response variables we then have $y_i \sim B(n_i,\pi_i)$, where $\pi_i = P(y_i = 1) = E(y_i) = \mu_i$. Thus, the density is given by   
+$$
+  f(y_i|\pi_i) = \binom{n_i}{y_i} \pi_i^{y_i}(1-\pi_i)^{n_i-y_i}.
+$$
+   
+## The log likelihood function   
+
+The log likelihood function is thus given by
+$$
+  L(\beta) = \prod_{i=1}^{G}L_i(\beta) = \prod_{i=1}^{G}f_i(y_i|\pi_i) =
+  \prod_{i=1}^{G} \binom{n_i}{y_i} \pi_i^{y_i}(1-\pi_i)^{n_i-y_i}
+$$
+We know $$
+l(\beta) = \log(L(\beta)),
+$$   
+and hence we have
+$$
+l_i(\beta) = y_i \log (\pi_i) + (n_i-y_i) \log (1-\pi_i) + \log\left( \binom{n_i}{y_i}\right) 
+$$
+$$
+=y_i \log (\pi_i) - y_i \log (1-\pi_i) + n_i \log(1-\pi_i) + \log\left( \binom{n_i}{y_i} \right)
+$$
+$$
+= y_i \log (\frac{\pi}{1-\pi}) + n_i log(1-\pi)+\log\left(\binom{n_i}{y_i}\right)
+$$
+$$
+= y_i \eta_i - n_i \log (1- e^{\eta_i}) +\log\left(\binom{n_i}{y_i}\right)
+$$
+$$
+l(\beta) = \sum_{i=1}^{G}(l_i) = \sum_{i=1}^{G}(y_i \eta_i - n_i \log (1- e^{\eta_i})+\log\left(\binom{n_i}{y_i} \right)
+$$
+
 
 ## The score function
-
+The score function is given by the derivate of the loglikelihood function with respect to $\beta$. Thus we have, 
+$$ 
+s(\beta)= \frac{\partial}{\partial\beta}l(\beta)=\sum_{i=1}^{G}
+s_i(\beta), 
+$$
+where 
+$$
+s_i(\beta)=\frac{\partial}{\partial\beta_i}(y_i\eta_i-\log(1+e^{\eta_i})+\log\left(\binom{n_i}{y_i}\right)
+=y_i\frac{\partial \eta_i}{\partial\beta_i}-\frac{\eta_i}{1+e^{\eta_i}}e^\eta_i\frac{\partial \eta_i}{\partial\beta_i}
+$$
+$$
+=y_ix_i-\pi_in_ix_i=(y_i-n_i\pi_i)x_i. 
+$$
+Hence we have, 
+$$
+s(\beta)=\sum_{i=1}^{G}
+s_i(\beta)=\sum_{i=1}^{G}x_i(y_i-n_i\pi_i)=\sum_{i=1}^{G}n_ix_i(\bar{y}_i-\pi_i).
+$$
+   
 ## Fisher information
+$$
+F_i (\beta) = E(s_i(\beta) [s_i(\beta)]^T) 
+= E(n_i x_i x_i^T(\bar{ y_i}-\pi_i)(\bar{ y_i}-\pi_i)^T x_i n_i)
+= E(n_i^2 x_i x_i^T ( \bar{y_i}-\pi_i)^2)
+$$
 
+
+$$
+= n_i^2 x_i x_i^T E(\bar{y_i}-\pi_i)^2
+= n_i^2 x_i x_i^T E(\frac{y_i}{n_i} - \pi_i)^2
+=n_i^2 x_i x_i^T E(\frac{y_i}{n_i} - E(\frac{y_i}{n_i}))^2
+$$
+
+
+$$
+=n_i^2 x_i x_i^T Var(\frac{y_i}{n_i})
+=n_i^2 x_i x_i^T \frac{1}{n_i^2} n_i \pi_i(1-\pi_i)
+=x_i x_i^T n_i \pi_i (1-\pi_i)
+$$
+
+
+
+$$
+F(\beta) = \sum_{i=1}^{G} (F_i(\beta)) = \sum_{i=1}^{G}(x_i x_i^T n_i \pi_i (1-\pi_i))
+$$
+
+   
 # Implementation of the Fisher scoring algorithm
-
-```{r setup, include=FALSE}
+In the second part of the exercise we have written a function that implements the Fisher scoring algorithm for the model given above. We know that to get convergence we need the initial values to be close to the exact solution. Hence, we have chosen the initial values for the regression coefficients to be xx, because they are close to the exact solution. 
+```{r setup, include=TRUE}
 knitr::opts_chunk$set(echo = TRUE)
 library(investr)
 myglm <- function(formula, dataset) {
