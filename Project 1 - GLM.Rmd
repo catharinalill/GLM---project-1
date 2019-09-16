@@ -7,22 +7,22 @@ output: html_document
 # Expressions for the log likelihood, the score function and the Fisher information 
 For the first part of this exercise we will derive expressions for the log likelihood, the score function and the Fisher information for the binary regression model with grouped data and the logit choice of link function.
 
-If some of the covariate vectors $x_i$ in the design matrix $X$ in a regression model is identical, the data can be grouped. We then have $n_i$ replicates of vector $x_i$ where $i = \{1,2,...,G\}.$ For grouped binary response variables we then have $y_i \sim B(n_i,\pi_i)$, where $\pi_i = P(y_i = 1) = E(y_i) = \mu_i$. Thus, the density is given by   
+If some of the covariate vectors $x_i$ in the design matrix $X$ in a regression model is identical, the data can be grouped. We then have $n_i$ replicates of vector $x_i$ where $i = \{1,2,...,G\}.$ For grouped binary response variables we then have $y_i \sim B(n_i,\pi_i)$, where $\pi_i = P(\frac{y_i}{n_i} = 1) = E(\frac{y_i}{n_i})$. Thus, the density is given by   
 $$
   f(y_i|\pi_i) = \binom{n_i}{y_i} \pi_i^{y_i}(1-\pi_i)^{n_i-y_i}.
 $$
    
 ## The log likelihood function   
 
-The log likelihood function is thus given by
+From the definition of the log likelihood function we have
 $$
   L(\beta) = \prod_{i=1}^{G}L_i(\beta) = \prod_{i=1}^{G}f_i(y_i|\pi_i) =
-  \prod_{i=1}^{G} \binom{n_i}{y_i} \pi_i^{y_i}(1-\pi_i)^{n_i-y_i}
+  \prod_{i=1}^{G} \binom{n_i}{y_i} \pi_i^{y_i}(1-\pi_i)^{n_i-y_i}.
 $$
 We know $$
 l(\beta) = \log(L(\beta)),
 $$   
-and hence we have
+and thus we have
 $$
 l_i(\beta) = y_i \log (\pi_i) + (n_i-y_i) \log (1-\pi_i) + \log\left( \binom{n_i}{y_i}\right) 
 $$
@@ -35,8 +35,9 @@ $$
 $$
 = y_i \eta_i - n_i \log (1- e^{\eta_i}) +\log\left(\binom{n_i}{y_i}\right)
 $$
+Finally we have
 $$
-l(\beta) = \sum_{i=1}^{G}(l_i) = \sum_{i=1}^{G}(y_i \eta_i - n_i \log (1- e^{\eta_i})+\log\left(\binom{n_i}{y_i} \right)
+l(\beta) = \sum_{i=1}^{G}(l_i) = \sum_{i=1}^{G}(y_i \eta_i - n_i \log (1- e^{\eta_i})+\log\left(\binom{n_i}{y_i} \right).
 $$
 
 
@@ -54,16 +55,20 @@ $$
 $$
 =y_ix_i-\pi_in_ix_i=(y_i-n_i\pi_i)x_i. 
 $$
-Hence we have, 
+Hence, 
 $$
 s(\beta)=\sum_{i=1}^{G}
 s_i(\beta)=\sum_{i=1}^{G}x_i(y_i-n_i\pi_i)=\sum_{i=1}^{G}n_ix_i(\bar{y}_i-\pi_i).
 $$
    
 ## Fisher information
+From the definition of the Fisher information we have, 
 $$
-F_i (\beta) = E(s_i(\beta) [s_i(\beta)]^T) 
-= E(n_i x_i x_i^T(\bar{ y_i}-\pi_i)(\bar{ y_i}-\pi_i)^T x_i n_i)
+F_i (\beta) = E(s_i(\beta) [s_i(\beta)]^T).
+$$
+By inserting the score function we have
+$$
+F_i (\beta) = E(n_i x_i x_i^T(\bar{ y_i}-\pi_i)(\bar{ y_i}-\pi_i)^T x_i n_i)
 = E(n_i^2 x_i x_i^T ( \bar{y_i}-\pi_i)^2)
 $$
 
@@ -78,10 +83,9 @@ $$
 $$
 =n_i^2 x_i x_i^T Var(\frac{y_i}{n_i})
 =n_i^2 x_i x_i^T \frac{1}{n_i^2} n_i \pi_i(1-\pi_i)
-=x_i x_i^T n_i \pi_i (1-\pi_i)
+=x_i x_i^T n_i \pi_i (1-\pi_i),
 $$
-
-
+where we in the transition from the second to the third line have used that $Var(X) = E(X-E(X))^2$. Hence, the Fisher information is
 
 $$
 F(\beta) = \sum_{i=1}^{G} (F_i(\beta)) = \sum_{i=1}^{G}(x_i x_i^T n_i \pi_i (1-\pi_i))
