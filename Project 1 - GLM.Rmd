@@ -1,64 +1,25 @@
 ---
-title: "Project 1"
+title: "TMA4315: Compulsory exercise 1 (title)" 
+subtitle: "Group XXX: Aurora Hofman, Camilla Karlsen, Catharina Lilleengen" 
+date: "`r format(Sys.time(), '%d.%m.%Y')`"
 output: html_document
 ---
+# Expressions for the log likelihood, the score function and the Fisher information 
+
+## The log likelihood function
+
+## The score function
+
+## Fisher information
+
+# Implementation of the Fisher scoring algorithm
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
 library(investr)
-# command+shift+c
-formula = ~ldose
-data = beetle
-X = model.matrix(formula, data =beetle)
-beta = matrix(0,ncol(beetle)-1) #initial values
-m = length(n)
-q = ncol(beetle)-1
-y = data$y
-n = data$n
-i = 1
-epsilon = 1
-
-while (epsilon > 0.1) {
-  eta = X%*%beta #sum(X%*%beta)        #linear predictor
-  pi = exp(eta)/(1+exp(eta))
-
-  S = t(X)%*%(y-n*pi)
-  D = diag(c(n*pi*(1-pi)),nrow = m)
-  F = (t(X)%*%D%*%X) + diag(10^(-10), nrow = nrow(F)) #add a small number to the diagonal to be able to invert the matrix
-  F_inv  = solve(F)
-  print(i)
-  i = i+1
-
-  beta_new = beta + F_inv%*%S
-  print(beta_new)
-  epsilon = norm(beta_new - beta)/norm(beta)
-  beta = beta_new
-}
-eta = X%*%beta
-likelihood = y*eta - n*log(1+exp(eta))
-
-#RSS = sum((y-eta)^2)
-#sigma_2 = RSS/(m-q)
-#Cov = solve(t(X)%*%X)*sigma_2
-#stderr = sqrt(diag(Cov))
-
-#Find estimates of standard error of maximum likelihood 
-#VET IKKE HVORDAN DETTE GJØRES???
-
-coef = cbind(likelihood, stderr)
-coef
-
-#Find deviance
-deviance = -2*(likelihood - l2)
-#HVA ER L2 HER???
-
-
-#DET ER EGT AKKURAT DET SAMME UNDER HER; JEG HAR BARE TESTA UTEN Å SETTE DET INN I FUNKSJONEN OVER
-
 myglm <- function(formula, dataset) {
   X = model.matrix(formula, data = dataset)
-  beta = matrix(0,ncol(dataset)-1) #initial values
+  beta = matrix(0,ncol(dataset)-1)                      # Initial values
   
   y = data$y
   n = data$n
@@ -67,32 +28,37 @@ myglm <- function(formula, dataset) {
   i = 1
   epsilon = 1
   
-  while (epsilon > 0.1) {
-    eta = X%*%beta #sum(X%*%beta)        #linear predictor
+  while (epsilon > 10^(-4)) {
+    eta = X%*%beta                                      # Linear predictor
     pi = exp(eta)/(1+exp(eta))
     
-    S = t(X)%*%(y-n*pi)
+    S = t(X)%*%(y-n*pi)                                 # Score function
     D = diag(c(n*pi*(1-pi)),nrow = length(y)) 
-    F = (t(X)%*%D%*%X) + diag(10^(-10), nrow = nrow(F)) #add a small number to the diagonal to be able to invert the matrix
-    F_inv  = solve(F)
+    F = (t(X)%*%D%*%X) + diag(10^(-10), nrow = nrow(F)) # Add a small number to the diagonal of the
+    F_inv  <- solve(F)                                  # Fisher information matrix to be able to                                                            invert the matrix
     print(i)
     i = i+1
     
-    beta_new = beta + F_inv%*%S
-    print(beta_new)
-    epsilon = norm(beta_new - beta)/norm(beta)
-    beta = beta_new
+    beta_new <- beta + F_inv%*%S                        # Calculate new estimates for the 
+    print(beta_new)                                     # regression  coefficients 
+    epsilon <- norm(beta_new - beta)/norm(beta)
+    beta <- beta_new
     
   }
   eta = X%*%beta
-  likelihood = y*eta - n*log(1+exp(eta))
-  RSS = sum((y-eta)^2)
-  sigma_2 = RSS/(m-q)
-  Cov = solve(t(X)%*%X)*sigma_2
-  stderr = sqrt(diag(Cov))
+  y_bar <- y/n
+  pi_hat <- exp(eta)/(1+exp(eta))
+
+  stderr <- sqrt(diag(F_inv))                           # Standard error for regression                                                                      coefficients
   
-  coef = cbind(likelihood, stderr)
+  #Find deviance
+  deviance <- 2*sum(y*log(y_bar/pi_hat) + (n-y)*log((1-y_bar)/(1-pi_hat)))
+  deviance  
+  #sum(y[i]* log(y_bar[i]/pi_hat[i])-(n[i]-y[i]) 
+  
+  coef <- cbind(beta, stderr)
   result <- list(coef,deviance)
+  result
   return(result)
 }
 
@@ -100,7 +66,5 @@ myglm <- function(formula, dataset) {
 summary(glm(cbind(y,n-y) ~ ldose, binomial, data=beetle))
 
 
-
-
 ```
-
+Comment on the observed deviance!!
