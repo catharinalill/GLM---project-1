@@ -1,6 +1,6 @@
 ---
-title: "TMA4315: Compulsory exercise 1 (title)" 
-subtitle: "Group XXX: Aurora Hofman, Camilla Karlsen, Catharina Lilleengen" 
+title: "TMA4315: Compulsory exercise 1" 
+subtitle: "Aurora Hofman, Camilla Karlsen, Catharina Lilleengen" 
 date: "`r format(Sys.time(), '%d.%m.%Y')`"
 output: html_document
 ---
@@ -146,7 +146,7 @@ myglm <- function(formula, dataset) {
   return(result)
 }
 
-myglm(formula=~ldose,data = beetle)
+#myglm(formula=~ldose,data = beetle)
 
 summary(glm(cbind(y,n-y) ~ ldose, binomial, data=beetle))
 
