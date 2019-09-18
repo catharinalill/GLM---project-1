@@ -7,7 +7,7 @@ output: html_document
 # Expressions for the log likelihood, the score function and the Fisher information 
 For the first part of this exercise we will derive expressions for the log likelihood, the score function and the Fisher information for the binary regression model with grouped data and the logit choice of link function.
 
-If some of the covariate vectors $x_i$ in the design matrix $X$ in a regression model is identical, the data can be grouped. We then have $n_i$ replicates of vector $x_i$ where $i = \{1,2,...,G\}.$ For grouped binary response variables we then have $y_i \sim B(n_i,\pi_i)$, where $\pi_i = P(\frac{y_i}{n_i} = 1) = E(\frac{y_i}{n_i})$. Thus, the density is given by   
+If some of the covariate vectors $x_i$ in the design matrix $X$ in a regression model is identical, the data can be grouped. We then have $n_i$ replicates of vector $x_i$ where $i = \{1,2,...,G\}.$ For grouped binary response variables we then have $y_i \sim B(n_i,\pi_i)$, where $\pi_i = P(\frac{y_i}{n_i} = 1) = E(\frac{y_i}{n_i})$. Thus, the density function is given by   
 $$
   f(y_i|\pi_i) = \binom{n_i}{y_i} \pi_i^{y_i}(1-\pi_i)^{n_i-y_i}.
 $$
@@ -33,8 +33,9 @@ $$
 = y_i \log (\frac{\pi}{1-\pi}) + n_i log(1-\pi)+\log\left(\binom{n_i}{y_i}\right)
 $$
 $$
-= y_i \eta_i - n_i \log (1- e^{\eta_i}) +\log\left(\binom{n_i}{y_i}\right)
+= y_i \eta_i - n_i \log (1- e^{\eta_i}) +\log\left(\binom{n_i}{y_i}\right),
 $$
+where $\eta_i = x_i^T\beta$.
 Finally we have
 $$
 l(\beta) = \sum_{i=1}^{G}(l_i) = \sum_{i=1}^{G}(y_i \eta_i - n_i \log (1- e^{\eta_i})+\log\left(\binom{n_i}{y_i} \right).
@@ -55,11 +56,13 @@ $$
 $$
 =y_ix_i-\pi_in_ix_i=(y_i-n_i\pi_i)x_i. 
 $$
+Here we have used that $\frac{\partial \eta_i}{\partial\beta_i} = x_i$.
 Hence, 
 $$
 s(\beta)=\sum_{i=1}^{G}
-s_i(\beta)=\sum_{i=1}^{G}x_i(y_i-n_i\pi_i)=\sum_{i=1}^{G}n_ix_i(\bar{y}_i-\pi_i).
+s_i(\beta)=\sum_{i=1}^{G}x_i(y_i-n_i\pi_i)=\sum_{i=1}^{G}n_ix_i(\bar{y}_i-\pi_i), 
 $$
+where $\bar{y_i} = y_i/n_i$. 
    
 ## Fisher information
 From the definition of the Fisher information we have, 
@@ -85,18 +88,20 @@ $$
 =n_i^2 x_i x_i^T \frac{1}{n_i^2} n_i \pi_i(1-\pi_i)
 =x_i x_i^T n_i \pi_i (1-\pi_i),
 $$
-where we in the transition from the second to the third line have used that $Var(X) = E(X-E(X))^2$. Hence, the Fisher information is
+where we in the transition from the second to the third line have used that $Var(X) = E(X-E(X))^2$. Hence, the Fisher information is given by
 
 $$
-F(\beta) = \sum_{i=1}^{G} (F_i(\beta)) = \sum_{i=1}^{G}(x_i x_i^T n_i \pi_i (1-\pi_i))
+F(\beta) = \sum_{i=1}^{G} F_i(\beta) = \sum_{i=1}^{G}(x_i x_i^T n_i \pi_i (1-\pi_i))
 $$
 
    
 # Implementation of the Fisher scoring algorithm
 In the second part of the exercise we have written a function that implements the Fisher scoring algorithm for the model given above. We know that to get convergence we need the initial values to be close to the exact solution. Hence, we have chosen the initial values for the regression coefficients to be xx, because they are close to the exact solution. 
+
 ```{r setup, include=TRUE}
 knitr::opts_chunk$set(echo = TRUE)
 library(investr)
+
 myglm <- function(formula, dataset) {
   X = model.matrix(formula, data = dataset)
   beta = matrix(0,ncol(dataset)-1)                      # Initial values
@@ -104,7 +109,7 @@ myglm <- function(formula, dataset) {
   y = data$y
   n = data$n
   m = length(n)
-  q = ncol(beetle)-1
+  q = ncol(dataset)-1
   i = 1
   epsilon = 1
   
@@ -114,34 +119,34 @@ myglm <- function(formula, dataset) {
     
     S = t(X)%*%(y-n*pi)                                 # Score function
     D = diag(c(n*pi*(1-pi)),nrow = length(y)) 
-    F = (t(X)%*%D%*%X) + diag(10^(-10), nrow = nrow(F)) # Add a small number to the diagonal of the
-    F_inv  <- solve(F)                                  # Fisher information matrix to be able to                                                            invert the matrix
+    F = (t(X)%*%D%*%X) 
+    F = F + diag(10^(-10), nrow = nrow(F))              # Add a small number to the diagonal of 
+    F_inv  <- solve(F)                                  # the Fisher information matrix to be able                                                         # to invert the matrix
     print(i)
-    i = i+1
+    i <- i+1
     
     beta_new <- beta + F_inv%*%S                        # Calculate new estimates for the 
-    print(beta_new)                                     # regression  coefficients 
+    print(beta_new)                                     # regression coefficients 
     epsilon <- norm(beta_new - beta)/norm(beta)
     beta <- beta_new
     
   }
-  eta = X%*%beta
+  eta <- X%*%beta
   y_bar <- y/n
   pi_hat <- exp(eta)/(1+exp(eta))
 
   stderr <- sqrt(diag(F_inv))                           # Standard error for regression                                                                      coefficients
   
   #Find deviance
-  deviance <- 2*sum(y*log(y_bar/pi_hat) + (n-y)*log((1-y_bar)/(1-pi_hat)))
-  deviance  
-  #sum(y[i]* log(y_bar[i]/pi_hat[i])-(n[i]-y[i]) 
+  deviance <- sum(dbinom(y,size = n, prob=y_bar, log = TRUE)-dbinom(y,size = n, prob=pi_hat, log = TRUE))
   
   coef <- cbind(beta, stderr)
+  colnames(coef) <- c("beta", "stderr")
   result <- list(coef,deviance)
-  result
   return(result)
 }
 
+myglm(formula=~ldose,data = beetle)
 
 summary(glm(cbind(y,n-y) ~ ldose, binomial, data=beetle))
 
