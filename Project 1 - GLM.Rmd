@@ -98,13 +98,16 @@ $$
 # Implementation of the Fisher scoring algorithm
 In the second part of the exercise we have written a function that implements the Fisher scoring algorithm for the model given above. We know that to get convergence we need the initial values to be close to the exact solution. Hence, we have chosen the initial values for the regression coefficients to be xx, because they are close to the exact solution. 
 
-```{r setup, include=TRUE}
-knitr::opts_chunk$set(echo = TRUE)
+
+
+
+```{r, include=TRUE}
 library(investr)
 
 myglm <- function(formula, dataset) {
   X = model.matrix(formula, data = dataset)
-  beta = matrix(0,ncol(dataset)-1)                      # Initial values
+  beta =  matrix(c(-55, 25),2,1)
+  #beta = matrix(0,ncol(dataset)-1)                      # Initial values
   
   y = data$y
   n = data$n
@@ -120,7 +123,7 @@ myglm <- function(formula, dataset) {
     S = t(X)%*%(y-n*pi)                                 # Score function
     D = diag(c(n*pi*(1-pi)),nrow = length(y)) 
     F = (t(X)%*%D%*%X) 
-    F = F + diag(10^(-10), nrow = nrow(F))              # Add a small number to the diagonal of 
+    #F = F + diag(10^(-10), nrow = nrow(F))              # Add a small number to the diagonal of 
     F_inv  <- solve(F)                                  # the Fisher information matrix to be able                                                         # to invert the matrix
     print(i)
     i <- i+1
@@ -138,18 +141,21 @@ myglm <- function(formula, dataset) {
   stderr <- sqrt(diag(F_inv))                           # Standard error for regression                                                                      coefficients
   
   #Find deviance
-  deviance <- sum(dbinom(y,size = n, prob=y_bar, log = TRUE)-dbinom(y,size = n, prob=pi_hat, log = TRUE))
+  deviance <- 2*sum(dbinom(y,size = n, prob=y_bar, log = TRUE)-dbinom(y,size = n, prob=pi_hat, log = TRUE))
   
   coef <- cbind(beta, stderr)
   colnames(coef) <- c("beta", "stderr")
   result <- list(coef,deviance)
   return(result)
 }
-
-#myglm(formula=~ldose,data = beetle)
+formula=~ldose
+myglm(formula,data = beetle)
 
 summary(glm(cbind(y,n-y) ~ ldose, binomial, data=beetle))
 
+#deviance(glm(cbind(y,n-y) ~ ldose, binomial, data=beetle))
+
+
 
 ```
-Comment on the observed deviance!!
+Our model gives a deviance of $11.23$. When one looks at the definition of the deviance one can see that it is in fact the difference between logarithm of to probablities. When testing with some numerical values one gets $log(0.7)-log(0.6) = 0.15$ even when this is multiplied by $8*2$ which is the number of groups we get $2.46$ which is a lot smaller than our deviance. In other words if the cantidate model is very good one would expect a very low deviance. When testing $8*2*(log(0.9)-log(0.4))$ one gets $12.97$. This implies taht with a deviance of $11.23$ one can have quite a big difference between the candidate model and the saturated model implieng that the model is not a very good one. 
