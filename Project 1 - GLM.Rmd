@@ -123,8 +123,9 @@ myglm <- function(formula, dataset) {
     S = t(X)%*%(y-n*pi)                                 # Score function
     D = diag(c(n*pi*(1-pi)),nrow = length(y)) 
     F = (t(X)%*%D%*%X) 
-    #F = F + diag(10^(-10), nrow = nrow(F))              # Add a small number to the diagonal of 
-    F_inv  <- solve(F)                                  # the Fisher information matrix to be able                                                         # to invert the matrix
+    #F = F + diag(10^(-10), nrow = nrow(F))             # Add a small number to the diagonal of 
+    F_inv  <- solve(F)                                  # the Fisher information matrix to be able                                                                                                  # to invert the matrix, not necesarily when 
+                                                        #good values og beta are chosen
     print(i)
     i <- i+1
     
@@ -138,7 +139,7 @@ myglm <- function(formula, dataset) {
   y_bar <- y/n
   pi_hat <- exp(eta)/(1+exp(eta))
 
-  stderr <- sqrt(diag(F_inv))                           # Standard error for regression                                                                      coefficients
+  stderr <- sqrt(diag(F_inv))                           # Standard error for regression                                                                                                               coefficients
   
   #Find deviance
   deviance <- 2*sum(dbinom(y,size = n, prob=y_bar, log = TRUE)-dbinom(y,size = n, prob=pi_hat, log = TRUE))
@@ -149,13 +150,13 @@ myglm <- function(formula, dataset) {
   return(result)
 }
 formula=~ldose
-myglm(formula,data = beetle)
+#myglm(formula,data = beetle)
 
 summary(glm(cbind(y,n-y) ~ ldose, binomial, data=beetle))
 
-#deviance(glm(cbind(y,n-y) ~ ldose, binomial, data=beetle))
+#deviance(glm(cbind(y,n-y) ~ ldose, binomial, data=beetle)) #check if we have the correct deviance
 
 
 
 ```
-Our model gives a deviance of $11.23$. When one looks at the definition of the deviance one can see that it is in fact the difference between logarithm of to probablities. When testing with some numerical values one gets $log(0.7)-log(0.6) = 0.15$ even when this is multiplied by $8*2$ which is the number of groups we get $2.46$ which is a lot smaller than our deviance. In other words if the cantidate model is very good one would expect a very low deviance. When testing $8*2*(log(0.9)-log(0.4))$ one gets $12.97$. This implies taht with a deviance of $11.23$ one can have quite a big difference between the candidate model and the saturated model implieng that the model is not a very good one. 
+Our model gives a deviance of $11.23$. When one looks at the definition of the deviance one can see that it is in fact the difference between logarithm of to probablities. Since probabilities are always between $(0,1)$ we can test with some numerical values. For example  one gets $log(0.7)-log(0.6) = 0.15$ even when this is multiplied by $8\cdot2$ which is the number of groups times to we get $2.46$ which is a lot smaller than our deviance. In other words if the cantidate model is very good one would expect a very low deviance. When testing $8 \cdot 2 \cdot (log(0.9)-log(0.4))$ one gets $12.97$. This implies that with a deviance of $11.23$ one can have quite a big difference between the candidate model and the saturated model implying that the model is not a very good one. 
