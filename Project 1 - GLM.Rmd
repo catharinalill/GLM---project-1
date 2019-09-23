@@ -96,7 +96,7 @@ $$
 
    
 # Implementation of the Fisher scoring algorithm
-In the second part of the exercise we have written a function that implements the Fisher scoring algorithm for the model given above. We we have chosen the initial values for the regression coefficients to be $[0,0]^T$, and we have added a small number to the diagonal of the information matrix $F$ to avoid overshoothing(singularity). 
+In the second part of the exercise we have written a function that implements the Fisher scoring algorithm for the model given above. We we have chosen the initial values for the regression coefficients to be $[0,0]^T$. 
 
 
 ```{r, include=TRUE}
