@@ -38,20 +38,20 @@ $$
 where $\eta_i = x_i^T\beta$.
 Finally we have
 $$
-l(\beta) = \sum_{i=1}^{G}(l_i) = \sum_{i=1}^{G}(y_i \eta_i - n_i \log (1- e^{\eta_i})+\log\left(\binom{n_i}{y_i} \right).
+l(\beta) = \sum_{i=1}^{G}l_i(\beta) = \sum_{i=1}^{G}\left(y_i \eta_i - n_i \log (1- e^{\eta_i})+\log\left(\binom{n_i}{y_i}\right) \right).
 $$
 
 
 ## The score function
-The score function is given by the derivate of the loglikelihood function with respect to $\beta$. Thus we have, 
+The score function is given by the derivative of the loglikelihood function with respect to $\beta$. Thus we have, 
 $$ 
 s(\beta)= \frac{\partial}{\partial\beta}l(\beta)=\sum_{i=1}^{G}
 s_i(\beta), 
 $$
 where 
 $$
-s_i(\beta)=\frac{\partial}{\partial\beta_i}(y_i\eta_i-\log(1+e^{\eta_i})+\log\left(\binom{n_i}{y_i}\right)
-=y_i\frac{\partial \eta_i}{\partial\beta_i}-\frac{\eta_i}{1+e^{\eta_i}}e^\eta_i\frac{\partial \eta_i}{\partial\beta_i}
+s_i(\beta)=\frac{\partial}{\partial\beta_i}(y_i\eta_i-n_i\log(1+e^{\eta_i})+\log\left(\binom{n_i}{y_i}\right)
+=y_i\frac{\partial \eta_i}{\partial\beta_i}-\frac{n_i}{1+e^{\eta_i}}e^{\eta_i}\frac{\partial \eta_i}{\partial\beta_i}
 $$
 $$
 =y_ix_i-\pi_in_ix_i=(y_i-n_i\pi_i)x_i. 
@@ -96,9 +96,7 @@ $$
 
    
 # Implementation of the Fisher scoring algorithm
-In the second part of the exercise we have written a function that implements the Fisher scoring algorithm for the model given above. We know that to get convergence we need the initial values to be close to the exact solution. Hence, we have chosen the initial values for the regression coefficients to be xx, because they are close to the exact solution. 
-
-
+In the second part of the exercise we have written a function that implements the Fisher scoring algorithm for the model given above. We we have chosen the initial values for the regression coefficients to be $[0,0]^T$, and we have added a small number to the diagonal of the information matrix $F$ to avoid overshoothing(singularity). 
 
 
 ```{r, include=TRUE}
@@ -128,7 +126,7 @@ myglm <- function(formula, dataset) {
     i <- i+1
     
     beta_new <- beta + F_inv%*%S                        # Calculate new estimates for the 
-    print(beta_new)                                     # Regression coefficients 
+    print(beta_new)                                     # regression coefficients 
     epsilon <- norm(beta_new - beta)/norm(beta)
     beta <- beta_new
     
@@ -151,4 +149,4 @@ myglm(formula,data = beetle)
 #Verify the result
 summary(glm(cbind(y,n-y) ~ ldose, binomial, data=beetle)) 
 ```
-Our model gives a deviance of $11.23$. When one looks at the definition of the deviance one can see that it is in fact the difference between logarithm of to probablities. Since probabilities are always between $(0,1)$ we can test with some numerical values. For example  one gets $log(0.7)-log(0.6) = 0.15$ even when this is multiplied by $8\cdot2$ which is the number of groups times two we get $2.46$ which is a lot smaller than our deviance. In other words if the candidate model is very good one would expect a very low deviance. When testing $8 \cdot 2 \cdot (log(0.9)-log(0.4))$ one gets $12.97$. This implies that with a deviance of $11.23$ one can have quite a big difference between the candidate model and the saturated model implying that the model is not a very good one. 
+Our model gives a deviance of $11.23$. Looking at the definition of the deviance one can see that it is in fact two times the difference between the logarithm of two probablities. Since probabilities are always between $(0,1)$ we can test with some numerical values. For example one get $2 \cdot (log(0.7)-log(0.6)) = 0.3$, and even when this is multiplied by $8$, which is the number of groups in our example, we get $2.46$ which is a lot smaller than our deviance. In other words if the candidate model is very good one would expect a very low deviance. When testing $8 \cdot 2 \cdot (log(0.9)-log(0.4))$ one get $12.97$. This implies that with a deviance of $11.23$ one can have quite a big difference between the candidate model and the saturated model implying that the model is not a very good one. 
