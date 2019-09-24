@@ -30,7 +30,7 @@ $$
 =y_i \log (\pi_i) - y_i \log (1-\pi_i) + n_i \log(1-\pi_i) + \log\left( \binom{n_i}{y_i} \right)
 $$
 $$
-= y_i \log (\frac{\pi}{1-\pi}) + n_i log(1-\pi)+\log\left(\binom{n_i}{y_i}\right)
+= y_i \log \left(\frac{\pi_i}{1-\pi_i}\right) + n_i log(1-\pi_i)+\log\left(\binom{n_i}{y_i}\right)
 $$
 $$
 = y_i \eta_i - n_i \log (1- e^{\eta_i}) +\log\left(\binom{n_i}{y_i}\right),
@@ -104,7 +104,6 @@ library(investr)
 
 myglm <- function(formula, dataset) {
   X = model.matrix(formula, data = dataset)
-  #beta =  matrix(c(-55, 25),2,1)
   beta = matrix(0,ncol(dataset)-1)                      # Initial values
   
   y = dataset$y
@@ -137,7 +136,8 @@ myglm <- function(formula, dataset) {
   #Standard error for regression coefficients                       
   stderr <- sqrt(diag(F_inv))                                       
   #Find deviance
-  deviance <- 2*sum(dbinom(y,size = n, prob=y_bar, log = TRUE)-dbinom(y,size = n, prob=pi_hat, log = TRUE))
+  deviance <- 2*sum(dbinom(y,size = n, prob=y_bar, log = TRUE)
+                    -dbinom(y,size = n, prob=pi_hat, log = TRUE))
   
   coef <- cbind(beta, stderr)
   colnames(coef) <- c("beta", "stderr")
