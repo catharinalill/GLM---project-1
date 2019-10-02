@@ -1,0 +1,42 @@
+---
+title: "Prosjekt_2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+long <- read.csv("https://www.math.ntnu.no/emner/TMA4315/2019h/eliteserie.csv")
+#long
+
+mod <- glm(goals ~ attack + defence + home, poisson(link= log), data=long ) #log natural choice of link funk
+summary(mod)
+ 
+```
+###########################1a)
+Velger log som link funksjon, naturlig for poisson, Dette antar at kovariatene har multiplikativ effekt på kovariatene. 
+
+Antar at antall mål er poisson. 
+Antar også uavhengighet mellom observasjonenen. Dette er ikke realistisk da to fotballag som spiller mot hverandre i stor grad vil påvirke hverandres sannsynlighet til å score mål. 
+Antar også at antal scoringer kun er avhengig av hvem som er er i angrep, hvem som er i forvar og om man spiller på hjemmebane. Dette er en veldig enkel modell. Man kan tenke seg at vær, sykdom, ect kan spille inn
+
+
+The estimates for attac implies how good a team is to score. This means one would want this to be large sice that gives more expected goals. 
+The estimate for defence implies how good a team is to defend. This one would want to be negative. 
+The estimate for home sais something about how playing at their homefield affects there ability to play well. 
+
+
+###########################1b)
+
+If good teams both play well in attack and defence one would expect these parameters to be correlated. We do not expect corralation with the parameter home. 
+
+```{r}
+formula = ~ attack + defence + home
+#cor.test(formula, data=long)
+cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) #hva skjer med dummi parameteren.
+```
+
+This supports the claim!!
