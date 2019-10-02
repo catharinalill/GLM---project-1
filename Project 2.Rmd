@@ -19,7 +19,7 @@ output: html_document
   fail <- mount$fail
 ```
 ##a) 
-```{r setup, include=TRUE}
+```{r, include=TRUE}
   mod <- glm(cbind(success,fail)~height+prominence, family=binomial(link = "logit"))
   summary(mod)
 ```
@@ -33,7 +33,7 @@ $$
   \hat{\phi} = \frac{D}{G-p}, 
 $$
 where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of estimated regression coefficients. 
-```{r setup, include=TRUE}
+```{r, include=TRUE}
   deviance <- summary(mod)$deviance
   G <- nrow(mount)      #number of groups
   p <- ncol(mount)-1    #number of estimated regression coefficients
@@ -41,13 +41,13 @@ where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of 
 ```
 Since $phi$ is larger than 1 we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and positive correlation between independent binary observation of the response variable. In this case, the data will be correlated because each individual most likely will belong to a cluster since reaching a mountain often happens in groups with a guide. Because we have overdispersion of we want to refit the model using a quasi-likelihood model. 
 
-```{r setup, include=TRUE}
+```{r, include=TRUE}
   mod2 <- glm(cbind(success,fail)~height+prominence, family=quasibinomial(link = "logit"))
   summary(mod2)
 ```
 
 ##c) 
-```{r setup, include=TRUE}
+```{r, include=TRUE}
   library(ISwR)
   #install.packages("ISwR")
 
@@ -90,7 +90,7 @@ Since $phi$ is larger than 1 we have overdispersion. Reasons for overdispersion 
 By looking at the computed QAICs we see that the model with only intercept has the lowest value. Hence, we choose this model without any covariates as our model. 
 
 ##d)
-```{r setup, include=TRUE}
+```{r, include=TRUE}
 drop1(mod, test = "LRT")  #Sett inn modellen vi valgte over
 
 
@@ -110,21 +110,21 @@ pchisq(wald, df=2, lower.tail=FALSE)
 By use of likelihood ratio test we see that each term is significant in the model. By use of the Wald test 
 
 ##e) 
-```{r setup, include=TRUE}
+```{r, include=TRUE}
 #residuals(,type = "deviance")
   
 ```
 
 
 ##f) 
-```{r setup, include=TRUE}
+```{r, include=TRUE}
 
   
 ```
 
 # Problem 2
 
-```{r setup, include=TRUE}
+```{r, include=TRUE}
  long <- read.csv("https://www.math.ntnu.no/emner/TMA4315/2019h/eliteserie.csv")
 ```
 
