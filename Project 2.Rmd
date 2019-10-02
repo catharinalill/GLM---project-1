@@ -12,19 +12,115 @@ output: html_document
   filepath <- "https://www.math.ntnu.no/emner/TMA4315/2018h/mountains"
   mount <- read.table(file = filepath, header = TRUE, col.names = c("height", 
       "prominence", "fail", "success"))
-```
 
+  height <- mount$height
+  prominence <- mount$prominence
+  success <- mount$success
+  fail <- mount$fail
+```
 ##a) 
+```{r setup, include=TRUE}
+  mod <- glm(cbind(success,fail)~height+prominence, family=binomial(link = "logit"))
+  summary(mod)
+```
+Here we want to fit a binary regression 
+
+Catharina skriver inn denne senere
 
 ##b) 
+By used of the observed deviance, we can estimate the overdispersion parameter $\phi$. We have, 
+$$
+  \hat{\phi} = \frac{D}{G-p}, 
+$$
+where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of estimated regression coefficients. 
+```{r setup, include=TRUE}
+  deviance <- summary(mod)$deviance
+  G <- nrow(mount)      #number of groups
+  p <- ncol(mount)-1    #number of estimated regression coefficients
+  phi <- deviance/(G-p)
+```
+Since $phi$ is larger than 1 we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and positive correlation between independent binary observation of the response variable. In this case, the data will be correlated because each individual most likely will belong to a cluster since reaching a mountain often happens in groups with a guide. Because we have overdispersion of we want to refit the model using a quasi-likelihood model. 
+
+```{r setup, include=TRUE}
+  mod2 <- glm(cbind(success,fail)~height+prominence, family=quasibinomial(link = "logit"))
+  summary(mod2)
+```
 
 ##c) 
+```{r setup, include=TRUE}
+  library(ISwR)
+  #install.packages("ISwR")
+
+  #Model selection with QAIC  
+  #Full model
+  likelihood = logLik(mod)
+  QAIC_mod = -2*likelihood/phi+2*(p+1)
+  likelihood
+  QAIC_mod
+  
+  #Model with only height as covariate
+  mod10 <- glm(cbind(success,fail)~height, family=binomial(link = "logit"))
+  deviance10 <- summary(mod10)$deviance
+  phi10 <- deviance10/(G-p-1)
+  likelihood10 = logLik(mod10)
+  QAIC_mod10 = -2*likelihood10/phi10+2*(p)
+  likelihood10
+  QAIC_mod10
+  
+  #Model with only prominence as covariate
+  mod01 <- glm(cbind(success,fail)~prominence , family=binomial(link = "logit"))
+  deviance01 <- summary(mod01)$deviance
+  phi01 <- deviance01/(G-p-1)
+  likelihood01 = logLik(mod01)
+  QAIC_mod01 = -2*likelihood01/phi01+2*(p)
+  likelihood01
+  QAIC_mod01
+  
+  #Model with only intercept
+  mod00 <- glm(cbind(success,fail)~1 , family=binomial(link = "logit"))
+  deviance00 <- summary(mod00)$deviance
+  phi00 <- deviance00/(G-p-2)
+  likelihood00 = logLik(mod00)
+  QAIC_mod00 = -2*likelihood00/phi00+2*(p-1)
+  likelihood00
+  QAIC_mod00
+  
+  #SKAL VI OGSÅ HA MED AIC FOR HVER MODEL HER??
+```
+By looking at the computed QAICs we see that the model with only intercept has the lowest value. Hence, we choose this model without any covariates as our model. 
 
 ##d)
+```{r setup, include=TRUE}
+drop1(mod, test = "LRT")  #Sett inn modellen vi valgte over
+
+
+#Wald test
+beta <- coef(mod)
+d <- c(0,0,0)
+C <- rbind(c(1,0,0),
+           c(0,1,0),
+           c(0,0,1))
+#Hvordan skal C se ut???
+wald <- t(C %*% beta - d) %*% solve(C %*% vcov(mod) %*% t(C)) %*% (C %*% beta - d)
+wald
+pchisq(wald, df=2, lower.tail=FALSE)
+
+  
+```
+By use of likelihood ratio test we see that each term is significant in the model. By use of the Wald test 
 
 ##e) 
+```{r setup, include=TRUE}
+#residuals(,type = "deviance")
+  
+```
+
 
 ##f) 
+```{r setup, include=TRUE}
+
+  
+```
 
 # Problem 2
 
