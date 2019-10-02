@@ -1,0 +1,52 @@
+---
+title: "TMA4315: Compulsory exercise 2" 
+subtitle: "Aurora Hofman, Camilla Karlsen, Catharina Lilleengen" 
+date: "`r format(Sys.time(), '%d.%m.%Y')`"
+output: html_document
+---
+
+
+# Problem 1
+
+```{r setup, include=TRUE}
+  filepath <- "https://www.math.ntnu.no/emner/TMA4315/2018h/mountains"
+  mount <- read.table(file = filepath, header = TRUE, col.names = c("height", 
+      "prominence", "fail", "success"))
+```
+
+##a) 
+
+##b) 
+
+##c) 
+
+##d)
+
+##e) 
+
+##f) 
+
+# Problem 2
+
+```{r setup, include=TRUE}
+ long <- read.csv("https://www.math.ntnu.no/emner/TMA4315/2019h/eliteserie.csv")
+```
+
+##a) 
+
+##b) 
+
+##c) 
+
+##d) 
+
+##e) 
+
+
+
+
+
+
+
+
+
