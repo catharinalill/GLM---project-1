@@ -15,16 +15,27 @@ output: html_document
   attach(mount)
 ```
 ##a) 
-From the given dataset we see that we have group data. Everyone that has attempted to reach the same mountain falls in the same group. We also have
+From the given dataset we see that we have group data, which means that every covariate vector, $\vec{x_i}$, in the design matrix $X$ that are identical, are grouped. In this case this means that everyone that has attempted to reach the same mountain falls in the same group. We assume that the number of groups $G$ is much less then the total number of observations $n = \sum \limits_{i=1}^{G} n_i$, where $n_i$ is the number of replicates of $\vec{x_i}$. This is reasonable to assume since there are far more people who have attempted reaching an mountain in our dataset, than the number of mountains which is 113 in this case. We also assume that each data $y_i$ are Bernoulli distributed with $P(y_i = 1) = \pi_i$. For the people attempting there is a certain probability of reaching each mountain which is $\pi_i$. So the attempt is either success or fail. 
 
-First we fit a glm modelling how the probability that an attempt at reaching a particular summit depends on its height and prominence. 
+From the given data we can see that we have a binary model because we have two response values, the number of successes and number of fails. The response variables $y_i$ are assumed to be independent given det covariates $x_{i1},\ldots, x_{ik}$. The linear predictor in this case is 
+$$
+\eta_i = \beta_0 + \beta_1x_{i1} + \ldots + \beta_kx_{ik} = \mathbf{x_i}^T\mathbf{\beta}, 
+$$
+which is linked to $\pi_i$ via the response function, 
+$$
+  \pi_i = h(\eta_i)
+$$
+The canonical link function for a binary regression model is the logit model, which is given by
+$$
+  \pi_i = \frac{\exp({\eta_i})}{1+\exp({\eta_i})}.
+$$
+For the canonical link function the log-likelihood function is always concave so that if the maximum likelihood estimator exists it is always unique. Thus, we choose the logit  model as our link function. 
+
+We now fit a glm modelling how the probability that an attempt at reaching a particular summit depends on its height and prominence. 
 ```{r, include=TRUE}
   mod <- glm(cbind(success,fail)~height+prominence, family=binomial(link = "logit"))
   summary(mod)
 ```
-Here we want to fit a binary regression 
-
-Catharina skriver inn denne senere
 
 ##b) 
 By used of the observed deviance, we can estimate the overdispersion parameter $\phi$. We have, 
@@ -38,7 +49,7 @@ where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of 
   p <- ncol(mount)-1    #number of estimated regression coefficients
   phi <- deviance/(G-p)
 ```
-Since $phi$ is larger than 1 we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and positive correlation between independent binary observation of the response variable. In this case, the data will be correlated because each individual most likely will belong to a cluster since reaching a mountain often happens in groups with a guide. Because we have overdispersion of we want to refit the model using a quasi-likelihood model. 
+Since $phi$ is larger than 1 we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and positive correlation between independent binary observations of the response variable. In this case, the data will be correlated because each individual most likely will belong to a cluster since reaching a mountain often happens in groups with a guide. Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
 
 ```{r, include=TRUE}
   mod2 <- glm(cbind(success,fail)~height+prominence, family=quasibinomial(link = "logit"))
@@ -49,11 +60,6 @@ Since $phi$ is larger than 1 we have overdispersion. Reasons for overdispersion 
 ```{r, include=TRUE}
   library(ISwR)
   #install.packages("ISwR")
-
-  #X = model.matrix(~height + prominence, data = mount)
-  #beta = summary(mod)$coefficients[,1] 
-  #eta = X%*%beta
-  #likelihood = sum(success*eta - (success+fail)*log(1+exp(eta)))
   
   #Model selection with QAIC  
   #Full model
@@ -65,24 +71,18 @@ Since $phi$ is larger than 1 we have overdispersion. Reasons for overdispersion 
   
   #Model with only height as covariate
   mod10 <- glm(cbind(success,fail)~height, family=binomial(link = "logit"))
-  #deviance10 <- summary(mod10)$deviance
-  #phi10 <- deviance10/(G-p-1)
   likelihood10 = logLik(mod10)
   QAIC_mod10 = -2*likelihood10/phi+2*(p)
   QAIC_mod10
   
   #Model with only prominence as covariate
   mod01 <- glm(cbind(success,fail)~prominence , family=binomial(link = "logit"))
-  #deviance01 <- summary(mod01)$deviance
-  #phi01 <- deviance01/(G-p-1)
   likelihood01 = logLik(mod01)
   QAIC_mod01 = -2*likelihood01/phi+2*(p)
   QAIC_mod01
   
   #Model with only intercept
   mod00 <- glm(cbind(success,fail)~1 , family=binomial(link = "logit"))
-  #deviance00 <- summary(mod00)$deviance
-  #phi00 <- deviance00/(G-p-2)
   likelihood00 = logLik(mod00)
   QAIC_mod00 = -2*likelihood00/phi+2*(p-1)
   QAIC_mod00
