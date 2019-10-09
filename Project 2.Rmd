@@ -140,20 +140,27 @@ Dataene ser ikke normalfordelt ut, varianser ser ut til å øke, ikke heterosced
 
 ##f) 
 ```{r, include=TRUE}
-new = data.frame(height = 8848, prominence = 8848)
-predicted = predict(mod2, newdata = new)
-predicted
-pred = plogis(predicted)
-pred
+alpha=0.05
 sigma_matrix= vcov(mod2)
+sds = sqrt(diag(sigma_matrix))
+lower = mod2$coefficients - qnorm(1-alpha/2) * sds
+upper = mod2$coefficients + qnorm(1-alpha/2) * sds
 
-logprobCI = confint(mod2,level = 0.95)
-logprobCI
-logprobCI = confint(mod2)
+predlow = lower %*% c(1,8848,8848)
+predupp = upper %*% c(1,8848,8848)
+ci = c(predlow, predupp)
+probci = plogis(ci) ##Translate the CI to probability scale
+probci
+
+#new = data.frame(height = 8848, prominence = 8848)
+#predicted = predict(mod2, new)
+#pred = plogis(predicted)
+
+#logprobCI = confint(mod2,level = 0.95)
 #predict(mod2, newdata=new, level = 0.95, interval = "confidence")
-logprobCI
-probCI = exp(logprobCI)
-probCI
+
+#ci=confint(mod2) #based on asymptotic normality
+
 ```
 
 # Problem 2
