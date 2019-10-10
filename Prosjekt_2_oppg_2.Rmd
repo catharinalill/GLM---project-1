@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 long <- read.csv("https://www.math.ntnu.no/emner/TMA4315/2019h/eliteserie.csv")
-#long
+long
 
 mod <- glm(goals ~ attack + defence + home, poisson(link= log), data=long ) #log natural choice of link funk
 summary(mod)
@@ -37,6 +37,100 @@ If good teams both play well in attack and defence one would expect these parame
 formula = ~ attack + defence + home
 #cor.test(formula, data=long)
 cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) #hva skjer med dummi parameteren.
+
+#må også sjekke opp mot home
 ```
 
+
 This supports the claim!!
+
+```{r}
+  deviance <- summary(mod)$deviance
+  n <- nrow(long)      #number of rows
+  p <- length(mod$coefficients) #number of estimated regression coefficients
+  phi <- deviance/ (352) #fyller inn manuelt da dataene inneholder uspilte kamper
+  phi
+  
+  p_val = pchisq(deviance, 352, lower.tail = FALSE)
+  p_val
+
+```
+
+Ikke signigikant p verdi altså kan man ikke konkludere med overdispertion. Kunne tenke seg at kampene er korrelerte som kan føre til overdispurtion men vi kan altså ikke konkludere med dette. 
+
+```{r}
+################# lager funksjonen ##################
+team_rank <- function(predict_data,n){
+    
+  teams = predict_data$attack[1:16]
+  teams_char = as.character(teams)
+  zero <- rep(0,16)
+  
+  df <- data.frame("points" =zero , "conceded" = zero ,"goals"= zero, "diff" = zero)
+  row.names(df) <- teams_char
+
+
+
+### check goals and conceded
+  for (i in (1:n)){
+    attack = as.character(predict_data$attack[i])
+    defence = as.character(predict_data$defence[i])
+    goals = predict_data$goals[i]
+    df[attack, "goals"] = df[attack, "goals"] + goals
+    df[defence, "conceded"] = df[defence, "conceded"] + goals
+    
+  }
+  
+  for (i in seq(1,n, by=2)){
+    attack = as.character(long$attack[i])
+    defence = as.character(long$defence[i])
+    goals_attack = predict_data$goals[i]
+    goals_defence = predict_data$goals[i+1]
+    if (goals_attack > goals_defence){
+      df[attack, "points"] = df[attack, "points"] + 3
+    }
+    else if(goals_attack < goals_defence){
+      df[defence, "points"] = df[defence, "points"] + 3
+    }
+    else{
+      df[defence, "points"] = df[defence, "points"] + 1
+      df[attack, "points"] = df[attack, "points"] + 1
+    }
+    
+  }
+  
+  
+  for (team in teams_char){
+    df[team, "diff"] = df[team, "goals"]-df[team, "conceded"]
+  }
+
+  ranking = data.table::frank(df, -points, -diff, -goals, ties.method = "random")
+  ranking
+
+return(ranking)
+}
+
+
+team_rank(long, 384) 
+
+```
+
+```{r}
+############## 2e##########################
+
+
+predicted_goals = predict(mod, long, type="response")
+predict_model
+predict_long <- long ########## blir desimaltall, burde vært int!! 
+predict_long$goals<-predicted_goals
+
+team_rank(predict_long)
+
+simulation_matrix <- matrix(0, 16, 1000)
+
+
+
+```
+
+
+
