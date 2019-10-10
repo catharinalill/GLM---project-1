@@ -15,6 +15,7 @@ long
 mod <- glm(goals ~ attack + defence + home, poisson(link= log), data=long ) #log natural choice of link funk
 summary(mod)
  
+
 ```
 ###########################1a)
 Velger log som link funksjon, naturlig for poisson, Dette antar at kovariatene har multiplikativ effekt på kovariatene. 
@@ -119,15 +120,30 @@ team_rank(long, 384)
 ############## 2e##########################
 
 
-predicted_goals = predict(mod, long, type="response")
-predict_model
+predicted_goals = (predict(mod, long, type="response"))
+predicted_goals
+#predict_model
 predict_long <- long ########## blir desimaltall, burde vært int!! 
 predict_long$goals<-predicted_goals
 
-team_rank(predict_long)
+team_rank(predict_long,480)
 
-simulation_matrix <- matrix(0, 16, 1000)
+simulation_matrix<- matrix(0,  1000, 16)
 
+for (i in 1:1000){
+
+  predict_goals = round(predict(mod, long, type="response"))
+  predict_long <- long 
+  
+  predict_long$goals <-predict_goals
+
+  #t<-team_rank(predict_long,480)
+  #rbind(simulation_matrix_1,t)
+  t<-team_rank(predict_long,480)
+  for (j in 1:16){
+     simulation_matrix[i ,j ] <- t[j]
+  }
+}
 
 
 ```
