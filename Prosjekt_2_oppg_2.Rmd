@@ -121,32 +121,67 @@ team_rank(long, 384)
 
 
 predicted_goals = (predict(mod, long, type="response"))
-predicted_goals
+#predicted_goals
 #predict_model
 predict_long <- long ########## blir desimaltall, burde vært int!! 
 predict_long$goals<-predicted_goals
 
 team_rank(predict_long,480)
 
-simulation_matrix<- matrix(0,  1000, 16)
+expected = (predict(mod, long, type="response"))
+rank_matrix<- matrix(0,  16, 1000)
+poisson_matrix <-matrix(0,  480, 1000)
+set.seed(50)
 
-for (i in 1:1000){
-
-  predict_goals = round(predict(mod, long, type="response"))
-  predict_long <- long 
-  
-  predict_long$goals <-predict_goals
-
-  #t<-team_rank(predict_long,480)
-  #rbind(simulation_matrix_1,t)
-  t<-team_rank(predict_long,480)
-  for (j in 1:16){
-     simulation_matrix[i ,j ] <- t[j]
-  }
+for (i in (1:480)){
+  poisson_matrix[i,] <- rpois(1000, expected[[i]])
 }
 
+predict_long <- long 
+for (i in (1:1000)){
+  n= 480
+  predict_long$goals = poisson_matrix[,i]
+  rank_matrix[,i] <-team_rank(predict_long,n)
+}
+
+
+#beregner gjennomsnittet
+ex_fin_rank =rep(0,16)
+
+for (i in (1:16)){
+  sum = 0
+  for (j in (1:1000)){
+    sum = sum + rank_matrix[i,j]
+  }
+  sum = sum/1000
+  ex_fin_rank[i] = sum
+}
+
+ex_fin_rank
 
 ```
 
 
+```{r}
+#f)
+
+C<- matrix(0,15,32)
+for (i in (1:15)){
+  c[i,i] = 1
+  c[i, i+15] = -1
+}
+
+d <- rep(0,15)
+betahat <- as.matrix(coef(mod))
+betahat
+
+dim(C)
+dim(betahat)
+
+#kopiert fra forelesning men får den ikke til å kjøre, hvorfor?
+wald <- t(C %*% (betahat) - d) %*% solve(C %*% vcov(mod) %*% t(C)) %*% (C %*% betahat - d)
+wald
+pchisq(wald, df=2, lower.tail=FALSE)
+
+```
 
