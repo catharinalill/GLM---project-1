@@ -1,0 +1,187 @@
+---
+title: "Prosjekt_2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+long <- read.csv("https://www.math.ntnu.no/emner/TMA4315/2019h/eliteserie.csv")
+long
+
+mod <- glm(goals ~ attack + defence + home, poisson(link= log), data=long ) #log natural choice of link funk
+summary(mod)
+ 
+
+```
+###########################1a)
+Velger log som link funksjon, naturlig for poisson, Dette antar at kovariatene har multiplikativ effekt på kovariatene. 
+
+Antar at antall mål er poisson. 
+Antar også uavhengighet mellom observasjonenen. Dette er ikke realistisk da to fotballag som spiller mot hverandre i stor grad vil påvirke hverandres sannsynlighet til å score mål. 
+Antar også at antal scoringer kun er avhengig av hvem som er er i angrep, hvem som er i forvar og om man spiller på hjemmebane. Dette er en veldig enkel modell. Man kan tenke seg at vær, sykdom, ect kan spille inn
+
+
+The estimates for attac implies how good a team is to score. This means one would want this to be large sice that gives more expected goals. 
+The estimate for defence implies how good a team is to defend. This one would want to be negative. 
+The estimate for home sais something about how playing at their homefield affects there ability to play well. 
+
+
+###########################1b)
+
+If good teams both play well in attack and defence one would expect these parameters to be correlated. We do not expect corralation with the parameter home. 
+
+```{r}
+formula = ~ attack + defence + home
+#cor.test(formula, data=long)
+cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) #hva skjer med dummi parameteren.
+
+#må også sjekke opp mot home
+```
+
+
+This supports the claim!!
+
+```{r}
+  deviance <- summary(mod)$deviance
+  n <- nrow(long)      #number of rows
+  p <- length(mod$coefficients) #number of estimated regression coefficients
+  phi <- deviance/ (352) #fyller inn manuelt da dataene inneholder uspilte kamper
+  phi
+  
+  p_val = pchisq(deviance, 352, lower.tail = FALSE)
+  p_val
+
+```
+
+Ikke signigikant p verdi altså kan man ikke konkludere med overdispertion. Kunne tenke seg at kampene er korrelerte som kan føre til overdispurtion men vi kan altså ikke konkludere med dette. 
+
+```{r}
+################# lager funksjonen ##################
+team_rank <- function(predict_data,n){
+    
+  teams = predict_data$attack[1:16]
+  teams_char = as.character(teams)
+  zero <- rep(0,16)
+  
+  df <- data.frame("points" =zero , "conceded" = zero ,"goals"= zero, "diff" = zero)
+  row.names(df) <- teams_char
+
+
+
+### check goals and conceded
+  for (i in (1:n)){
+    attack = as.character(predict_data$attack[i])
+    defence = as.character(predict_data$defence[i])
+    goals = predict_data$goals[i]
+    df[attack, "goals"] = df[attack, "goals"] + goals
+    df[defence, "conceded"] = df[defence, "conceded"] + goals
+    
+  }
+  
+  for (i in seq(1,n, by=2)){
+    attack = as.character(long$attack[i])
+    defence = as.character(long$defence[i])
+    goals_attack = predict_data$goals[i]
+    goals_defence = predict_data$goals[i+1]
+    if (goals_attack > goals_defence){
+      df[attack, "points"] = df[attack, "points"] + 3
+    }
+    else if(goals_attack < goals_defence){
+      df[defence, "points"] = df[defence, "points"] + 3
+    }
+    else{
+      df[defence, "points"] = df[defence, "points"] + 1
+      df[attack, "points"] = df[attack, "points"] + 1
+    }
+    
+  }
+  
+  
+  for (team in teams_char){
+    df[team, "diff"] = df[team, "goals"]-df[team, "conceded"]
+  }
+
+  ranking = data.table::frank(df, -points, -diff, -goals, ties.method = "random")
+  ranking
+
+return(ranking)
+}
+
+
+team_rank(long, 384) 
+
+```
+
+```{r}
+############## 2e##########################
+
+
+predicted_goals = (predict(mod, long, type="response"))
+#predicted_goals
+#predict_model
+predict_long <- long ########## blir desimaltall, burde vært int!! 
+predict_long$goals<-predicted_goals
+
+team_rank(predict_long,480)
+
+expected = (predict(mod, long, type="response"))
+rank_matrix<- matrix(0,  16, 1000)
+poisson_matrix <-matrix(0,  480, 1000)
+set.seed(50)
+
+for (i in (1:480)){
+  poisson_matrix[i,] <- rpois(1000, expected[[i]])
+}
+
+predict_long <- long 
+for (i in (1:1000)){
+  n= 480
+  predict_long$goals = poisson_matrix[,i]
+  rank_matrix[,i] <-team_rank(predict_long,n)
+}
+
+
+#beregner gjennomsnittet
+ex_fin_rank =rep(0,16)
+
+for (i in (1:16)){
+  sum = 0
+  for (j in (1:1000)){
+    sum = sum + rank_matrix[i,j]
+  }
+  sum = sum/1000
+  ex_fin_rank[i] = sum
+}
+
+ex_fin_rank
+
+```
+
+
+```{r}
+#f)
+
+C<- matrix(0,15,32)
+for (i in (1:15)){
+  c[i,i] = 1
+  c[i, i+15] = -1
+}
+
+d <- rep(0,15)
+betahat <- as.matrix(coef(mod))
+betahat
+
+dim(C)
+dim(betahat)
+
+#kopiert fra forelesning men får den ikke til å kjøre, hvorfor?
+wald <- t(C %*% (betahat) - d) %*% solve(C %*% vcov(mod) %*% t(C)) %*% (C %*% betahat - d)
+wald
+pchisq(wald, df=2, lower.tail=FALSE)
+
+```
+
