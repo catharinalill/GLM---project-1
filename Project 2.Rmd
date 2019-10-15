@@ -177,12 +177,11 @@ mod <- glm(goals ~ attack + defence + home, poisson(link= log), data=long ) #log
 summary(mod)
 ```
 
-Velger log som link funksjon, naturlig for poisson, Dette antar at kovariatene har multiplikativ effekt på kovariatene. 
+Choose log as our linkfunktion since this is the natural choise for a poisson distribution. 
 
-Antar at antall mål er poisson. 
-Antar også uavhengighet mellom observasjonenen. Dette er ikke realistisk da to fotballag som spiller mot hverandre i stor grad vil påvirke hverandres sannsynlighet til å score mål. 
-Antar også at antal scoringer kun er avhengig av hvem som er er i angrep, hvem som er i forvar og om man spiller på hjemmebane. Dette er en veldig enkel modell. Man kan tenke seg at vær, sykdom, ect kan spille inn
+We assume that the number of goels is poison distributed and independens between the observations. This is not that realistic since to teams playing against each other probably will affect each others chance of making a goal. 
 
+We also asume that the only facotors who influece the number of goals are the denfence team, the attack team ans weather they play on the home field or not. This is a very simple model and one could imagine that factors such as weather, illness, ect can make a difference. 
 
 The estimates for attac implies how good a team is to score. This means one would want this to be large sice that gives more expected goals. 
 The estimate for defence implies how good a team is to defend. This one would want to be negative. 
@@ -200,9 +199,9 @@ cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) #hva skjer med dummi p
 
 #må også sjekke opp mot home
 ```
+As one can see the correlation is high. This supports the claim.
 
-
-This supports the claim!!
+We now want to check if there is overdispurtion in the data. Do do so we calculate the p-value. 
   
 ##c)
   
@@ -218,9 +217,11 @@ p_val
 
 ```
 
-Ikke signigikant p verdi altså kan man ikke konkludere med overdispertion. Kunne tenke seg at kampene er korrelerte som kan føre til overdispurtion men vi kan altså ikke konkludere med dette. 
+
+This p-value is not significant and one can not conclude with ovredispertion. Still possible sources of overdispertion could be correlated matches.
 
 ##d)
+Now we want to make a function that gives us the teamrank based on the games played. 
 
 ```{r, include=TRUE}
 #lager funksjonen
@@ -278,6 +279,9 @@ team_rank(long, 384)
 ```
 
 ##e)
+
+Now we want to simulate 1000 matches based on our model. 
+
 ```{r, include=TRUE}
 predicted_goals = (predict(mod, long, type="response"))
 #predict_model
@@ -313,11 +317,23 @@ for (i in (1:16)){
   ex_fin_rank[i] = sum
 }
 
-ex_fin_rank
+
+
+teams<-long$attack[1:16]
+team_av_rank<-ex_fin_rank
+av_result<- rbind(teams,team_av_rank) #Får ikke denne til å bli pen, vil ha lagnavn over snittet
+
+av_result
 
 ```
 
 ##f)
+
+One could assume that if each team is equally good at defence and attack and that these parameters therefor should be equal. 
+This is a linear hypothesis because it can be written as $C\beta = d$. When the $\beta_attack$ =$-\beta_defence$ this simply gives a $C$ matrix with two onec on every row one at the place for the teams attack and one at the place for the temas defence. 
+
+Under the construction of C is shown as well as a wald test of this hypotheses.
+
 ```{r, include=TRUE}
 
 C<- matrix(0,15,32)
@@ -339,6 +355,7 @@ pchisq(wald, df=2, lower.tail=FALSE)
 ```
 
 
+As one can see this gives a low p-value and we reject the nullhypotheses with significanse $0.0051$
 
 
 
