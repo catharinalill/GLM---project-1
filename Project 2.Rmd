@@ -15,7 +15,7 @@ output: html_document
   attach(mount)
 ```
 ##a) 
-From the given dataset we see that we have group data, which means that every covariate vector, $\vec{x_i}$, in the design matrix $X$ that are identical, are grouped. In this case this means that everyone that has attempted to reach the same mountain falls in the same group. We assume that the number of groups $G$ is much less then the total number of observations $n = \sum \limits_{i=1}^{G} n_i$, where $n_i$ is the number of replicates of $\vec{x_i}$. This is reasonable to assume since there are far more people who have attempted reaching an mountain in our dataset, than the number of mountains which is 113 in this case. We also assume that each data $y_i$ are Bernoulli distributed with $P(y_i = 1) = \pi_i$. For the people attempting there is a certain probability of reaching each mountain which is $\pi_i$. So the attempt is either a success or fail. Hence, we have a binary model because we have two response values, the number of successes and number of fails. The response variables $y_i$ are assumed to be independent given the covariates $x_{i1},\ldots, x_{ik}$. The linear predictor in this case is 
+From the given dataset we notice that we have grouped data, which means that every covariate vector, $\vec{x_i}$, in the design matrix $X$ that are identical, are grouped. In our case this means that everyone that has attempted to reach the same mountain falls in the same group. We assume that the number of groups $G$ is much less then the total number of observations $n = \sum \limits_{i=1}^{G} n_i$, where $n_i$ is the number of replicates of $\vec{x_i}$. This is reasonable to assume since there are far more people who have attempted reaching an mountain in our dataset, than the number of mountains which is 113 in this case. We also assume that each data $y_i$ are Bernoulli distributed with $P(y_i = 1) = \pi_i$. For the people attempting there is a certain probability of reaching each mountain which is $\pi_i$. So the attempt is either a success or fail. Hence, we have a binary model because we have two response values, the number of successes and number of fails. The response variables $y_i$ are assumed to be independent given the covariates $x_{i1},\ldots, x_{ik}$. The linear predictor in this case is 
 $$
 \eta_i = \beta_0 + \beta_1x_{i1} + \ldots + \beta_kx_{ik} = \mathbf{x_i}^T\mathbf{\beta}, 
 $$
@@ -38,7 +38,7 @@ We now fit a glm modelling how the probability that an attempt at reaching a par
 FLERE ASSUMPTIONS??
 
 ##b) 
-By used of the observed deviance, we can estimate the overdispersion parameter $\phi$. We have, 
+By use of the observed deviance, we can estimate the overdispersion parameter $\phi$. We have, 
 $$
   \hat{\phi} = \frac{D}{G-p}, 
 $$
@@ -57,11 +57,11 @@ From the output we see that $\hat{\phi}$ is larger than 1, thus we have overdisp
 ```
 
 ##c) 
-Here we want to choose the best model for our data. This means we compare models with all possible combinations of the covariates we have in our original model, hereby called the full model, and also including the model with only intercept. To compare the models we look at the QAIC criterion which is given by, 
+Now we want to choose the best model for our data. This means we compare models with all possible combinations of the covariates we have in our original model, hereby called the full model, and also including the model with only intercept and choose the best of them. To compare the models we look at the QAIC criterion which is given by, 
 $$
-  QAIC = -\frac{2l(\hat{\theta})}{\hat{\phi}} +2p.
+  QAIC = -\frac{2l(\hat{\theta})}{\hat{\phi}} +2p, 
 $$
-We let $\hat{\phi}$ be a common estimate of the overdispersion parameter under the full model, and we count $\phi$ as a estimated parameter. To compute the QAIC for the different models we start by computing the likelihood function after we have fitted non-quasi-likelihood models for the differnt combinations. 
+where $l(\hat{\theta})$ is the likelihood function evaluated at the estimated regression coefficients. We let $\hat{\phi}$ be a common estimate of the overdispersion parameter under the full model, and we count $\phi$ as a estimated parameter. To compute the QAIC for the different models we start by computing the likelihood function after we have fitted non-quasi-likelihood models for the different combinations og covariates. 
 ```{r, include=TRUE}
   library(ISwR)
 
@@ -91,7 +91,7 @@ We let $\hat{\phi}$ be a common estimate of the overdispersion parameter under t
   
   #SKAL VI OGSÅ HA MED AIC FOR HVER MODEL HER??
 ```
-By looking at the computed QAICs we see that the model with both covariates has the lowest value. Hence, we choose this model as our model. 
+By looking at the computed QAICs we see that the model with both covariates has the lowest value. Hence, we choose the full model. 
 
 ##d)
 Now we want to test the significance of each term in the model using both Wald test and likelihood ratio test. 
@@ -113,13 +113,35 @@ pchisq(wald, df=3, lower.tail=FALSE)
 #wald.test(vcov(mod2),beta,c(1,2,3))
   
 ```
-By use of likelihood ratio test we see that each term is significant in the model. From this test we can also see that both covariates is significant. By comparing with the summary from the fitted model we see that the covariate prominence is less significant. 
+By use of likelihood ratio test we see that each term in the model is significant. From this test we can also see that both covariates is significant.(STÅR DET IKKE BARE DET SAMME HER TO GANGER?) By comparing with the summary from the fitted model we see that both covariates are less significant, but that the covariate prominence has a relatively large change is significance relative to the covariate height. (Skjønner dere hva som menes her?)
 
 By use of the Wald test we see that the p-value is much less than any reasonable significance level. Hence, we reject the null hypothesis that the coefficient estimates are zero. Thus the coefficients are significant. 
 
 "Given your choice of link function, give interpretations of the estimated regression slope parameters, in language that you would use to communicate to non-statisticians. " ?????????
 intepretation of logit model, odds, chap 5.1 i boka
 
+Our choice of link function was the logit model. To interpret the estimated regression coefficients we look at the odds, 
+$$
+  \frac{\pi_i}{1-\pi_i} = \frac{P(y_i=1 | x_i)}{P(y_i=0 | x_i)} = \exp(\beta_0)\cdot \exp(x_{i1}\beta_1)\cdot \ldots \cdot \exp(x_{ik}\beta_k) = \exp(\eta_i). 
+$$
+So, if we for example increase $x_{i2}$ by one unit to $x_{i2} +1 $  and keep all the other covariates constant, then we have
+$$
+  \frac{\pi_i}{1-\pi_i} = \exp(\beta_0)\cdot \exp(x_{i1}\beta_1)\cdot \exp((x_{i2}+1)\beta_2)\cdot \ldots \cdot \exp(x_{ik}\beta_k)
+$$
+$$
+  = \exp(\beta_0)\cdot \exp(x_{i1}\beta_1)\cdot \exp(x_{i2}\beta_2)\cdot\exp(\beta_2)\cdot \ldots \cdot \exp(x_{ik}\beta_k) = \exp(\eta_i) \cdot\exp(\beta_2).
+$$
+Hence, the odds changes by $\exp(\beta_2)$. So, if $\beta_2 >0$ then $P(y_i=1)/P(y_i=0)$ increases and if $\beta_2 < 0$ then $P(y_i=1)/P(y_i=0)$ decreases. Also, if $\beta_2 = 0$ then $P(y_i=1)/P(y_i=0)$ remain unchanged. Hence, the effect of the covariates on the odds in exponentially multiplicative. 
+
+This can also be interpreted in terms of the log-odds, 
+$$
+\log\left(\frac{\pi_i}{1-\pi_i}\right) = \eta_i = x_i^T\beta.
+$$
+We then have a linear relationship, and if we now increase $x_{i2}$ by one unit to $x_{i2} +1 $ and keep all the other covariates constant, then the log-odds will change with a factor of $\beta_2$ as shown below. 
+$$
+\log\left(\frac{\pi_i}{1-\pi_i}\right) =  \beta_0 + \beta_1x_{i1} + \beta_2(x_{i2}+1) + \ldots + \beta_kx_{ik} = x_i^T\beta + \beta_2. 
+$$
+   
 ##e) 
 ```{r, include=TRUE}
 library(ggplot2)
@@ -136,13 +158,19 @@ ggplot(data3,aes(x=prominence,y = res)) + geom_point()
 ```
 Examine the model fit.
 
-Dataene ser ikke normalfordelt ut, varianser ser ut til å øke, ikke heteroscedasisity
+When plotting the fitted values against the residuals one can see that the data points does not seem to be randomly spread around the horizontal axis $y=0$. Hence, we do not have a linear relationship between the response and the covariates?? It also seems like the variance increase, so we do not have heteroscedasisty. (Ehh, er det sånn man sier det??) se på tidligere statlær øvinger kanskje
 
+The figures with the covariates prominence and height plotted against the residuals looks more randomized aroud the horizontal axis, and thus ... (Hvordan skal vi kommentere dette?)
+
+Ser ikke ut for å være et lineært forhold mellom response og kovariater?, variansen ser ut til å øke, ikke heteroscedasisity, hmm heter det homoscedasisty hvis variansen er konstant kanskje, så vi har ikke homo...?
 
 
 
 ##f) 
 "The height and the prominence of Mount Everest are both 8848 meters. Compute a prediction for the probability that an attempt at this summit will be successful. First consider the predicted value and its variance on the scale of the linear predictor. Also compute a 95% confidence interval for the predicted value on this scale based on asymptotic normality of β̂ .Transform this confidence interval to the probability scale and explain the theory behind the transformation you're using.""
+
+The height and the prominence of Mount Everest are both 8848 meters. We start by computing a prediction for the probability that an attempt at the summit will be successfull. Then we compute a 95% confidence interval for the predicted value on this scale based on asymptotic normality of β. 
+
 ```{r, include=TRUE}
 alpha=0.05
 sigma_matrix= vcov(mod2) #the estimate variance matrix of β
@@ -166,31 +194,43 @@ probci
 #ci=confint(mod2) #based on asymptotic normality
 
 ```
+
+To transform the confidence interval we have used that, ...
+   
 # Problem 2
 
+In this problem we want to use generalized linear model to analyse part of the 2018 results from the Norwegian elite football league. 
 ```{r, include=TRUE}
 long <- read.csv("https://www.math.ntnu.no/emner/TMA4315/2019h/eliteserie.csv")
 ```
 ##a)
+We start by fitting a model with attack, defence and home as covariates, to the data.
 ```{r, include=TRUE}
 mod <- glm(goals ~ attack + defence + home, poisson(link= log), data=long ) #log natural choice of link funk
 summary(mod)
 ```
 
-Choose log as our linkfunktion since this is the natural choise for a poisson distribution. 
+We choose the log-linear model as our link function since this is the natural choice for a poisson distribution. Further we assume that the response variables $y_i$, i.e. number of goals, is poisson distributed with parameter $\lambda_i$. We assume that these are independent between the observations. This is not that realistic since two teams playing against each other probably will affect each others chance of making a goal. 
 
-We assume that the number of goels is poison distributed and independens between the observations. This is not that realistic since to teams playing against each other probably will affect each others chance of making a goal. 
+Moreover we assume that the only factors who influence the number of goals are the defence team, the attack team and weather they play on the home field or not. This is a very simple model and one could imagine that factors such as weather, illness, ect. can make a difference. 
 
-We also asume that the only facotors who influece the number of goals are the denfence team, the attack team ans weather they play on the home field or not. This is a very simple model and one could imagine that factors such as weather, illness, ect can make a difference. 
+The parameter in the model is given by
+$$
+  \lambda_i = \exp(x_i^T\beta) =\exp(\eta_i) ,
+$$
+or equivalently,
+$$
+  \log(\lambda_i) = x_i^T\beta.
+$$
+Hence, the effect of covariates on the rate $\lambda$ is similar to the effects on the odds in the logit model, which is exponentially multiplicative. 
 
-The estimates for attac implies how good a team is to score. This means one would want this to be large sice that gives more expected goals. 
-The estimate for defence implies how good a team is to defend. This one would want to be negative. 
-The estimate for home sais something about how playing at their homefield affects there ability to play well. 
+The estimates for attack implies how good a team is to score. This means one would want this to be large since that gives more expected goals. 
+The estimate for defence implies how good a team is to defend. This one would want to be negative. The estimate for home says something about how playing at their homefield affects their ability to play well. 
 
 
 ##b)
 
-If good teams both play well in attack and defence one would expect these parameters to be correlated. We do not expect corralation with the parameter home. 
+If good teams play well both in attack and defence one would expect these parameters to be positively correlated. We do not expect correlation with the parameter home. 
 
 ```{r, include=TRUE}
 formula = ~ attack + defence + home
@@ -199,15 +239,15 @@ cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) #hva skjer med dummi p
 
 #må også sjekke opp mot home
 ```
-As one can see the correlation is high. This supports the claim.
+As one can see from the output above, the correlation is high. This supports the claim that attack and defence are positively correlated. 
 
-We now want to check if there is overdispurtion in the data. Do do so we calculate the p-value. 
-  
+Det er positiv korrelasjon her sant???
+     
 ##c)
-  
+We now want to check if there is overdispersion in the data. To do so we estimate the overdispersion parameter $\phi$, which is given in problem $2b)$. We know this parameter is chisquared distributed with $xxx$ degrees of freedom so we use this to calculate the p-value.   
 ```{r, include=TRUE}
 deviance <- summary(mod)$deviance
-n <- nrow(long)      #number of rows
+n <- nrow(long)               #number of rows
 p <- length(mod$coefficients) #number of estimated regression coefficients
 phi <- deviance/ (352) #fyller inn manuelt da dataene inneholder uspilte kamper
 phi
@@ -215,16 +255,16 @@ phi
 p_val = pchisq(deviance, 352, lower.tail = FALSE)
 p_val
 
+#HVORDAN KOMMER VI FREM TIL 352 her??
+
 ```
 
-
-This p-value is not significant and one can not conclude with ovredispertion. Still possible sources of overdispertion could be correlated matches.
+This p-value is not significant and one can not conclude with overdispersion. Still possible sources of overdispersion could be correlated matches.
 
 ##d)
 Now we want to make a function that gives us the teamrank based on the games played. 
 
 ```{r, include=TRUE}
-#lager funksjonen
 team_rank <- function(predict_data,n){
   teams = predict_data$attack[1:16]
   teams_char = as.character(teams)
@@ -262,7 +302,6 @@ team_rank <- function(predict_data,n){
     }
     
   }
-  
   
   for (team in teams_char){
     df[team, "diff"] = df[team, "goals"]-df[team, "conceded"]
@@ -307,7 +346,7 @@ for (i in (1:1000)){
 }
 ```
 ```{r, include=TRUE}
-#beregner gjennomsnittet
+#calculating mean
 ex_fin_rank =rep(0,16)
 
 for (i in (1:16)){
@@ -327,12 +366,13 @@ av_result
 
 ```
 
+Her må vi forklare litt mer hva vi gjør, men tror jeg trenger en gjennomgang av hva som skjer først :) :) 
+
 ##f)
 
-One could assume that if each team is equally good at defence and attack and that these parameters therefor should be equal. 
-This is a linear hypothesis because it can be written as $C\beta = d$. When the $\beta_attack$ =$-\beta_defence$ this simply gives a $C$ matrix with two onec on every row one at the place for the teams attack and one at the place for the temas defence. 
+One could assume that if each team is equally good at defence and attack that these parameters therefore should be equal in absolute value but of opposite sign. This is a linear hypothesis because it can be written as $C\beta = d$. When the $\beta_{attack}$ =$-\beta_{defence}$ this simply gives a $C$ matrix with two ones on every row, one at the place for the teams attack and one at the place for the teams defence. 
 
-Under the construction of C is shown as well as a wald test of this hypotheses.
+In the code below, the construction of C is shown as well as a wald test of this hypotheses.
 
 ```{r, include=TRUE}
 
@@ -353,9 +393,8 @@ wald <- t(C %*% (betahat) - d) %*% solve(C %*% vcov(mod) %*% t(C)) %*% (C %*% be
 wald
 pchisq(wald, df=2, lower.tail=FALSE)
 ```
-
-
-As one can see this gives a low p-value and we reject the nullhypotheses with significanse $0.0051$
+As one can see this gives a low p-value and we reject the nullhypothesis for any reasonable significance level. Hence, the simplification of the model to assume that the attack and defence strengths of each team are equal in absolute value but with opposite sign is not reasonable to do. ?? Er det riktig å si? 
+Hva med å skrive det over i stedet? "with significance $0.0051$"
 
 
 
