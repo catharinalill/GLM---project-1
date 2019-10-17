@@ -243,19 +243,13 @@ The estimate for defence implies how good a team is to defend. This one would wa
 
 ##b)
 
-If good teams play well both in attack and defence one would expect these parameters to be positively correlated. We do not expect correlation with the parameter home. 
+If good teams play well both in attack and defence one would expect these parameters to be negatively correlated. BEGRUN HVORFOR VI TROR DET? 
 
 ```{r, include=TRUE}
-formula = ~ attack + defence + home
-#cor.test(formula, data=long)
-cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) #hva skjer med dummi parameteren.
-
-#må også sjekke opp mot home men da får man vektorer med forskjellig lengde! 
+cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) #hva skjer med dummi parameteren? hva tenker du på her? Spurte Jarle og vi skal ikke sjekke opp mot home :) 
 ```
-As one can see from the output above, the correlation is high. This supports the claim that attack and defence are positively correlated. 
+As one can see from the output above, the correlation is high. This supports the claim that attack and defence are negatively correlated. KOMMENTERE NOE MER HER? 
 
-Det er positiv korrelasjon her sant??? det er et negativt tall men attack og defence har alltid motsatt fortegn
-     
 ##c)
 We now want to check if there is overdispersion in the data. To do so we estimate the overdispersion parameter $\phi$, which is given in problem $2b)$. We know this parameter is chisquared distributed with $352$ degrees of freedom so we use this to calculate the p-value.   
 ```{r, include=TRUE}
@@ -270,13 +264,13 @@ p_val
 
 ```
 
-This p-value is not significant and one can not conclude with overdispersion. Still possible sources of overdispersion could be correlated matches.
+This p-value is not significant and one can not conclude with overdispersion. Still possible sources of overdispersion could be correlated matches. POSSIBLE SOURCES OF UNDERDISPERSION? 
 
 ##d)
 Now we want to make a function that gives us the teamrank based on the games played. 
 
 ```{r, include=TRUE}
-#making the function
+#Making the function that takes the above data.frame as input, computes the total number of points given to each team, and returns the ranking of each team. 
 team_rank <- function(predict_data,n){
   teams = predict_data$attack[1:16]
   teams_char = as.character(teams)
@@ -287,7 +281,7 @@ team_rank <- function(predict_data,n){
   
   
   
-  ### check goals and conceded
+  ### Check goals and conceded
   for (i in (1:n)){
     attack = as.character(predict_data$attack[i])
     defence = as.character(predict_data$defence[i])
@@ -297,7 +291,7 @@ team_rank <- function(predict_data,n){
     
   }
   
-  #count points
+  #Count points
   for (i in seq(1,n, by=2)){
     attack = as.character(long$attack[i])
     defence = as.character(long$defence[i])
@@ -320,14 +314,17 @@ team_rank <- function(predict_data,n){
     df[team, "diff"] = df[team, "goals"]-df[team, "conceded"]
   }
   
-  #get rank
+  #Get rank
   ranking = data.table::frank(df, -points, -diff, -goals, ties.method = "random")
   ranking
   
   return(ranking)
 }
 
-team_rank(long, 384) 
+rank=team_rank(long, 384) 
+teams = long$attack[1:16]
+d=data.frame("Teams"=as.character(teams),"Rank"=rank)
+d
 
 ```
 
@@ -336,38 +333,31 @@ team_rank(long, 384)
 Now we want to simulate the entire tippeliga a thousand times and then compute the ranking in each case before computing an average ranking per team.  
 
 ```{r, include=TRUE}
-
-#predicted_goals = (predict(mod, long, type="response"))
-#predict_model
-#predict_long <- long  
-#predict_long$goals<-predicted_goals
-
-
-#team_rank(predict_long,n)
-
 #Find the betas from our model
 expected = (predict(mod, long, type="response"))
 
-n=480 #number of matches per tippeliga
+n=480 #Number of matches per tippeliga
 
-#construct empty rank_matrixes to fill in the rank for each tippeliga and a poisson
+#Construct empty rank_matrixes to fill in the rank for each tippeliga and a poisson
 rank_matrix<- matrix(0,  16, 1000)
-#construct an empty matrix to fill inn the simulated results per game per tippeliga (480*1000) matrix
+#Construct an empty matrix to fill inn the simulated results per game per tippeliga (480*1000) matrix
 poisson_matrix <-matrix(0,  n, 1000)
 
 set.seed(50)
 
-#fill the poisson_matrix with simulations of number of goals scored per game, do this thousand times for each match
+#Fill the poisson_matrix with simulations of number of goals scored per game, do this thousand times for each match
 for (i in (1:n)){
   poisson_matrix[i,] <- rpois(1000, expected[[i]])
 }
+#Using the function in point e), compute the ranking of each team and store this in a 1000×16 matrix. You should perhaps do this inside another function that inserts the simulated goals into the complete data frame which you then pass to your function from point d).
 
-#construct the rank based on each tippeliga
+#Construct the ranking of each team based on each tippeliga
 predict_long <- long 
 for (i in (1:1000)){
   predict_long$goals = poisson_matrix[,i]
   rank_matrix[,i] <-team_rank(predict_long,n)
 }
+rank_matrix[,3]
 
 ```
 ```{r, include=TRUE}
@@ -383,11 +373,8 @@ for (i in (1:16)){
 
 teams<-long$attack[1:16]
 team_av_rank<-ex_fin_rank
-av_result<- rbind(teams,team_av_rank) #Får ikke denne til å bli pen, vil ha lagnavn over snittet
-
+av_result <- data.frame("Team"=as.character(teams),"Expected rank"=team_av_rank)
 av_result
-
-
 ```
 
 Her må vi forklare litt mer hva vi gjør, men tror jeg trenger en gjennomgang av hva som skjer først :) :) Har fikset litt opp nå, ble det bedre? 
@@ -399,26 +386,24 @@ One could assume that if each team is equally good at defence and attack that th
 In the code below, the construction of C is shown as well as a wald test of this hypotheses.
 
 ```{r, include=TRUE}
-
+library(MASS)
 C<- matrix(0,15,32)
 for (i in (1:15)){
-  C[i,i] = 1
-  C[i, i+15] = -1
+  C[i,i+1] = 1
+  C[i, i+16] = 1
 }
 
 d <- rep(0,15)
 betahat <- as.matrix(coef(mod))
-betahat
 
-dim(C)
-dim(betahat)
-
-wald <- t(C %*% (betahat) - d) %*% solve(C %*% vcov(mod) %*% t(C)) %*% (C %*% betahat - d)
+wald <- t(C %*% (betahat) - d) %*% ginv(C %*% vcov(mod) %*% t(C)) %*% (C %*% betahat - d)
 wald
-pchisq(wald, df=2, lower.tail=FALSE)
+pchisq(wald, df=15, lower.tail=FALSE)
+qchisq(1-alpha,df=15)  #bruk denne istedenfor? sjekk ut 
+?pchisq
+?solve
 ```
-As one can see this gives a low p-value and we reject the nullhypothesis for any reasonable significance level. Hence, the simplification of the model to assume that the attack and defence strengths of each team are equal in absolute value but with opposite sign is not reasonable. ?? Er det riktig å si, ja :) ? 
-Hva med å skrive det over i stedet? "with significance $0.0051$" mye bedre!!!!! :) 
+As one can see this gives a high p-value and we do not reject the nullhypothesis for any reasonable significance level. Hence, the simplification of the model to assume that the attack and defence strengths of each team are equal in absolute value but with opposite sign is reasonable. 
 
 
 
