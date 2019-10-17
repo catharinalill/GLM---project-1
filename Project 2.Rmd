@@ -373,8 +373,8 @@ for (i in (1:16)){
 teams<-long$attack[1:16]
 team_av_rank<-ex_fin_rank
 av_result <- data.frame("Team"=as.character(teams),"Expected rank"=team_av_rank)
-av_result
-
+av_result_sorted <-av_result[order(av_result$Expected),] #order the dataframe by the expected rank
+av_result_sorted 
 ```
 From the output above we see that Rosenborg has the highest expected rank. 
 KOMMENTERE NOE HER? ROSENBORG HAR HAR HØYEST EXPECTED RANK. 
