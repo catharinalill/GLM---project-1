@@ -96,7 +96,7 @@ By looking at the computed QAICs we see that the model with both covariates has 
 ##d)
 Now we want to test the significance of each term in the model using both Wald test and likelihood ratio test. 
 ```{r, include=TRUE}
-drop1(mod, test = "LRT")  #Skal det være mod2 her? 
+drop1(mod2, test = "LRT")  #Skal det være mod2 her? 
 summary(mod2)
 
 #Wald test
