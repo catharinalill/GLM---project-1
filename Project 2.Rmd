@@ -349,19 +349,15 @@ set.seed(50)
 for (i in (1:n)){
   poisson_matrix[i,] <- rpois(1000, expected[[i]])
 }
-#Using the function in point e), compute the ranking of each team and store this in a 1000×16 matrix. You should perhaps do this inside another function that inserts the simulated goals into the complete data frame which you then pass to your function from point d).
 
-#Construct the ranking of each team based on each tippeliga
+#Construct the ranking of each team based on each tippeliga and store this in the rank_matrix 
 predict_long <- long 
 for (i in (1:1000)){
   predict_long$goals = poisson_matrix[,i]
   rank_matrix[,i] <-team_rank(predict_long,n)
 }
-rank_matrix[,3]
 
-```
-```{r, include=TRUE}
-#calculating mean
+#Calculate the expected rank
 ex_fin_rank =rep(0,16)
 
 for (i in (1:16)){
@@ -375,9 +371,10 @@ teams<-long$attack[1:16]
 team_av_rank<-ex_fin_rank
 av_result <- data.frame("Team"=as.character(teams),"Expected rank"=team_av_rank)
 av_result
+
 ```
 
-Her må vi forklare litt mer hva vi gjør, men tror jeg trenger en gjennomgang av hva som skjer først :) :) Har fikset litt opp nå, ble det bedre? 
+KOMMENTERE NOE HER? ROSENBORG HAR HAR HØYEST EXPECTED RANK. 
 
 ##f)
 
@@ -386,22 +383,19 @@ One could assume that if each team is equally good at defence and attack that th
 In the code below, the construction of C is shown as well as a wald test of this hypotheses.
 
 ```{r, include=TRUE}
-library(MASS)
 C<- matrix(0,15,32)
 for (i in (1:15)){
-  C[i,i+1] = 1
+  C[i,i+1] = 1 #enig i at det blir +1 siden vi har intercept? 
   C[i, i+16] = 1
 }
 
 d <- rep(0,15)
 betahat <- as.matrix(coef(mod))
 
-wald <- t(C %*% (betahat) - d) %*% ginv(C %*% vcov(mod) %*% t(C)) %*% (C %*% betahat - d)
+wald <- t(C %*% (betahat) - d) %*% solve(C %*% vcov(mod) %*% t(C)) %*% (C %*% betahat - d)
 wald
 pchisq(wald, df=15, lower.tail=FALSE)
-qchisq(1-alpha,df=15)  #bruk denne istedenfor? sjekk ut 
-?pchisq
-?solve
+qchisq(1-alpha,df=15)  #bruk denne istedenfor pchisq? også forkaste fordi denne er større enn wald? 
 ```
 As one can see this gives a high p-value and we do not reject the nullhypothesis for any reasonable significance level. Hence, the simplification of the model to assume that the attack and defence strengths of each team are equal in absolute value but with opposite sign is reasonable. 
 
