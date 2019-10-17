@@ -42,12 +42,13 @@ By use of the observed deviance, we can estimate the overdispersion parameter $\
 $$
   \hat{\phi} = \frac{D}{G-p}, 
 $$
-where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of estimated regression coefficients. It the code below we estimate the observed deviance. 
+where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of estimated regression coefficients. In the code below we estimate the observed deviance. 
 ```{r, include=TRUE}
-  deviance <- summary(mod)$deviance
+  deviance <- deviance(mod)
   G <- nrow(mount)      #number of groups
   p <- ncol(mount)-1    #number of estimated regression coefficients
   phi <- deviance/(G-p)
+  phi
 ```
 From the output we see that $\hat{\phi}$ is larger than 1, thus we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and positive correlation between independent binary observations of the response variable. In this case, the data will be correlated because each individual most likely will belong to a cluster since reaching a mountain often happens in groups with a guide. Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
 
@@ -168,19 +169,22 @@ Ser ikke ut for å være et lineært forhold mellom response og kovariater?, var
 The height and the prominence of Mount Everest are both 8848 meters. We start by computing a prediction for the probability that an attempt at the summit will be successfull. Then we compute a 95% confidence interval for the predicted value on this scale based on asymptotic normality of β. 
 
 ```{r, include=TRUE}
+new = data.frame(height = 8848, prominence = 8848)
+predict(mod2,newdata=new,type="response") #The predicted probability
+
 alpha=0.05
 sigma_matrix= vcov(mod2) #the estimate variance matrix of β
 sds = sqrt(diag(sigma_matrix))
 lower = mod2$coefficients - qnorm(1-alpha/2) * sds
 upper = mod2$coefficients + qnorm(1-alpha/2) * sds
-
 predlow = lower %*% c(1,8848,8848)
 predupp = upper %*% c(1,8848,8848)
 ci = c(predlow, predupp) #95% confidence interval for the predicted value 
 probci = plogis(ci) #Transform the confindence interval to probability scale
 probci
 
-#new = data.frame(height = 8848, prominence = 8848)
+
+
 #predicted = predict(mod2, new)
 #pred = plogis(predicted)
 
@@ -240,18 +244,16 @@ As one can see from the output above, the correlation is high. This supports the
 Det er positiv korrelasjon her sant??? det er et negativt tall men attack og defence har alltid motsatt fortegn
      
 ##c)
-We now want to check if there is overdispersion in the data. To do so we estimate the overdispersion parameter $\phi$, which is given in problem $2b)$. We know this parameter is chisquared distributed with $xxx$ degrees of freedom so we use this to calculate the p-value.   
+We now want to check if there is overdispersion in the data. To do so we estimate the overdispersion parameter $\phi$, which is given in problem $2b)$. We know this parameter is chisquared distributed with $352$ degrees of freedom so we use this to calculate the p-value.   
 ```{r, include=TRUE}
-deviance <- summary(mod)$deviance
+deviance <- deviance(mod)
 n <- nrow(long)               #number of rows
 p <- length(mod$coefficients) #number of estimated regression coefficients
-phi <- deviance/ (352) #check summery to find degrees of freedom
+df <- mod$df.residual #find degrees of freedom
+phi <- deviance/ df 
 phi
-
-p_val = pchisq(deviance, 352, lower.tail = FALSE)
+p_val = pchisq(deviance, df, lower.tail = FALSE)
 p_val
-
-#HVORDAN KOMMER VI FREM TIL 352 her?? leser det fra summary på toppen :) 
 
 ```
 
@@ -335,9 +337,9 @@ expected = (predict(mod, long, type="response"))
 
 n=480 #number of matches per tippeliga
 
-#construct emty rank_matrixes to fill in the rank for each tippeliga and a poisson
+#construct empty rank_matrixes to fill in the rank for each tippeliga and a poisson
 rank_matrix<- matrix(0,  16, 1000)
-#construct an emty matrix to fill inn the simuated results per game per tippeliga (480*1000) matrix
+#construct an empty matrix to fill inn the simulated results per game per tippeliga (480*1000) matrix
 poisson_matrix <-matrix(0,  n, 1000)
 
 set.seed(50)
@@ -365,8 +367,6 @@ for (i in (1:16)){
   sum = sum/1000
   ex_fin_rank[i] = sum
 }
-
-
 
 teams<-long$attack[1:16]
 team_av_rank<-ex_fin_rank
