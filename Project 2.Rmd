@@ -15,7 +15,8 @@ output: html_document
   attach(mount)
 ```
 ##a) 
-From the given dataset we notice that we have grouped data. This means that every covariate vector, $\vec{x_i}$, with $i=1,\ldots,G$, in the design matrix $X$ that are identical, are grouped. In our case this means that everyone that has attempted to reach the same mountain falls in the same group. We assume that the number of groups $G$ is much less then the total number of observations $n = \sum \limits_{i=1}^{G} n_i$, where $n_i$ is the number of replicates of $\vec{x_i}$. This is reasonable to assume since there are far more people who have attempted reaching an mountain in our dataset, than the number of mountains which is 113 in this case. 
+From the given dataset we notice that we have grouped data. This means that every covariate vector, $\vec{x_i}$, with $i=1,\ldots,G$, in the design matrix $X$ that are identical, are grouped. In our case this means that every expedition group that has attempted to reach the same mountain falls in the same group. We assume that the number of groups $G$ is much less then the total number of observations $n = \sum \limits_{i=1}^{G} n_i$, where $n_i$ is the number of replicates of $\vec{x_i}$. This is reasonable to assume since there are far more expeditions with people who have attempted reaching an mountain in our dataset, than the number of mountains which is 113 in this case. 
+OBS! Not individual iberservations, but expeditions!!!
 
 The response variables $y_i$ are assumed to be independent given the covariates $x_{i1},\ldots, x_{ik}$. We also assume that each data $y_i$ are Bernoulli distributed with $P(y_i = 1) = \pi_i$. For the people attempting there is a certain probability of reaching each mountain which is $\pi_i$. So the attempt is either a success or fail. 
 
@@ -243,7 +244,7 @@ The estimates for attack implies how good a team is to score. This means one wou
 
 ##b)
 
-If good teams play well both in attack and defence one would expect these parameters to be negatively correlated. BEGRUN HVORFOR VI TROR DET? 
+If good teams play well both in attack and defence one would expect these parameters to be negatively correlated. This is because if a team is good in attack $\beta_{attack}$ will be large and positive, and if it is good in defence then $\beta_{defence}$ will be large and negative. Thus, we get a negative correlation. The same applies if a team is bad in both attack and defence. 
 
 ```{r, include=TRUE}
 cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) #hva skjer med dummi parameteren? hva tenker du på her? Spurte Jarle og vi skal ikke sjekke opp mot home :) 
@@ -251,7 +252,7 @@ cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) #hva skjer med dummi p
 As one can see from the output above, the correlation is high. This supports the claim that attack and defence are negatively correlated. KOMMENTERE NOE MER HER? 
 
 ##c)
-We now want to check if there is overdispersion in the data. To do so we estimate the overdispersion parameter $\phi$, which is given in problem $2b)$. We know this parameter is chisquared distributed with $352$ degrees of freedom so we use this to calculate the p-value.   
+We now want to check if there is overdispersion in the data. To do so we estimate the overdispersion parameter $\phi$, which is given in problem $2b)$. We know this parameter is chisquared distributed and from the summary we can see we have $352$ degrees of freedom, so we use this to calculate the p-value.   
 ```{r, include=TRUE}
 deviance <- deviance(mod)
 n <- nrow(long)               #number of rows
@@ -265,6 +266,7 @@ p_val
 ```
 
 This p-value is not significant and one can not conclude with overdispersion. Still possible sources of overdispersion could be correlated matches. POSSIBLE SOURCES OF UNDERDISPERSION? 
+Sources?? overdispersion i 1c?? 
 
 ##d)
 Now we want to make a function that gives us the teamrank based on the games played. 
@@ -324,7 +326,7 @@ team_rank <- function(predict_data,n){
 rank=team_rank(long, 384) 
 teams = long$attack[1:16]
 d=data.frame("Teams"=as.character(teams),"Rank"=rank)
-d
+d  #Hva med å sortere denne??
 
 ```
 
@@ -333,14 +335,15 @@ d
 Now we want to simulate the entire tippeliga a thousand times and then compute the ranking in each case before computing an average ranking per team.  
 
 ```{r, include=TRUE}
-#Find the betas from our model
-expected = (predict(mod, long, type="response"))
+#Find the beta´s from our model
+expected = (predict(mod, long, type="response")) 
+expected
 
 n=480 #Number of matches per tippeliga
 
-#Construct empty rank_matrixes to fill in the rank for each tippeliga and a poisson
+#Construct empty rank_matrix to fill in the rank for each tippeliga simulated
 rank_matrix<- matrix(0,  16, 1000)
-#Construct an empty matrix to fill inn the simulated results per game per tippeliga (480*1000) matrix
+#Construct an empty matrix to fill in the simulated results per game per tippeliga (480*1000) matrix
 poisson_matrix <-matrix(0,  n, 1000)
 
 set.seed(50)
@@ -373,25 +376,25 @@ av_result <- data.frame("Team"=as.character(teams),"Expected rank"=team_av_rank)
 av_result
 
 ```
-
+From the output above we see that Rosenborg has the highest expected rank. 
 KOMMENTERE NOE HER? ROSENBORG HAR HAR HØYEST EXPECTED RANK. 
 
 ##f)
 
-One could assume that if each team is equally good at defence and attack that these parameters therefore should be equal in absolute value but of opposite sign. This is a linear hypothesis because it can be written as $C\beta = d$. When the $\beta_{attack}$ =$-\beta_{defence}$ this simply gives a $C$ matrix with two ones on every row, one at the place for the teams attack and one at the place for the teams defence. 
+One could assume that if each team is equally good at defence and attack these parameters should be equal in absolute value but of opposite sign. This is a linear hypothesis because it can be written as $C\beta = d$. When the $\beta_{attack}$ =$-\beta_{defence}$ this simply gives a $C$ matrix with two ones in every row, one at the place for the teams attack and one at the place for the teams defence. 
 
 In the code below, the construction of C is shown as well as a wald test of this hypotheses.
 
 ```{r, include=TRUE}
 C<- matrix(0,15,32)
 for (i in (1:15)){
-  C[i,i+1] = 1 #enig i at det blir +1 siden vi har intercept? 
+  C[i,i+1] = 1  
   C[i, i+16] = 1
 }
 
 d <- rep(0,15)
 betahat <- as.matrix(coef(mod))
-
+betahat
 wald <- t(C %*% (betahat) - d) %*% solve(C %*% vcov(mod) %*% t(C)) %*% (C %*% betahat - d)
 wald
 pchisq(wald, df=15, lower.tail=FALSE)
