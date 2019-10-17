@@ -15,7 +15,7 @@ output: html_document
   attach(mount)
 ```
 ##a) 
-From the given dataset we notice that we have grouped data, which means that every covariate vector, $\vec{x_i}$, in the design matrix $X$ that are identical, are grouped. In our case this means that everyone that has attempted to reach the same mountain falls in the same group. We assume that the number of groups $G$ is much less then the total number of observations $n = \sum \limits_{i=1}^{G} n_i$, where $n_i$ is the number of replicates of $\vec{x_i}$. This is reasonable to assume since there are far more people who have attempted reaching an mountain in our dataset, than the number of mountains which is 113 in this case. We also assume that each data $y_i$ are Bernoulli distributed with $P(y_i = 1) = \pi_i$. For the people attempting there is a certain probability of reaching each mountain which is $\pi_i$. So the attempt is either a success or fail. Hence, we have a binary model because we have two response values, the number of successes and number of fails. The response variables $y_i$ are assumed to be independent given the covariates $x_{i1},\ldots, x_{ik}$. The linear predictor in this case is 
+From the given dataset we notice that we have grouped data, which means that every covariate vector, $\vec{x_i}$, in the design matrix $X$ that are identical, are grouped. In our case this means that everyone that has attempted to reach the same mountain falls in the same group. We assume that the number of groups $G$ is much less than the total number of observations $n = \sum \limits_{i=1}^{G} n_i$, where $n_i$ is the number of replicates of $\vec{x_i}$. This is reasonable to assume since there are far more people who have attempted reaching an mountain in our dataset, than the number of mountains which is 113 in this case. We also assume that each data $y_i$ are Bernoulli distributed with $P(y_i = 1) = \pi_i$. For the people attempting there is a certain probability of reaching each mountain which is $\pi_i$. So the attempt is either a success or fail. Hence, we have a binary model because we have two response values, the number of successes and number of fails. The response variables $y_i$ are assumed to be independent given the covariates $x_{i1},\ldots, x_{ik}$. The linear predictor in this case is 
 $$
 \eta_i = \beta_0 + \beta_1x_{i1} + \ldots + \beta_kx_{ik} = \mathbf{x_i}^T\mathbf{\beta}, 
 $$
@@ -370,8 +370,8 @@ for (i in (1:16)){
 teams<-long$attack[1:16]
 team_av_rank<-ex_fin_rank
 av_result <- data.frame("Team"=as.character(teams),"Expected rank"=team_av_rank)
-av_result
-
+av_result_sorted <-av_result[order(av_result$Expected),] #order the dataframe by the expected rank
+av_result_sorted 
 ```
 
 KOMMENTERE NOE HER? ROSENBORG HAR HAR HØYEST EXPECTED RANK. 
