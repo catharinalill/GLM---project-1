@@ -107,12 +107,8 @@ C <- rbind(c(1,0,0),
 wald <- t(C %*% beta - d) %*% solve(C %*% vcov(mod2) %*% t(C)) %*% (C %*% beta - d)
 wald
 pchisq(wald, df=3, lower.tail=FALSE)
-
-#library(aod)
-#wald.test(vcov(mod2),beta,c(1,2,3))
-  
 ```
-By use of likelihood ratio test we see that each term in the model is significant. From this test we can also see that both covariates is significant.(STÅR DET IKKE BARE DET SAMME HER TO GANGER?) By comparing with the summary from the fitted model we see that both covariates are less significant, but that the covariate prominence has a relatively large change is significance relative to the covariate height. (Skjønner dere hva som menes her?)
+By use of likelihood ratio test we see that each term in the model is significant. By comparing with the summary from the fitted model we see that both covariates are a bit less significant in the summary output. 
 
 By use of the Wald test we see that the p-value is much less than any reasonable significance level. Hence, we reject the null hypothesis that the coefficient estimates are zero. Thus the coefficients are significant. 
 
@@ -130,7 +126,7 @@ $$
 $$
   = \exp(\beta_0)\cdot \exp(x_{i1}\beta_1)\cdot \exp(x_{i2}\beta_2)\cdot\exp(\beta_2)\cdot \ldots \cdot \exp(x_{ik}\beta_k) = \exp(\eta_i) \cdot\exp(\beta_2).
 $$
-Hence, the odds changes by $\exp(\beta_2)$. So, if $\beta_2 >0$ then $P(y_i=1)/P(y_i=0)$ increases and if $\beta_2 < 0$ then $P(y_i=1)/P(y_i=0)$ decreases. Also, if $\beta_2 = 0$ then $P(y_i=1)/P(y_i=0)$ remain unchanged. Hence, the effect of the covariates on the odds in exponentially multiplicative. 
+Hence, the odds changes by $\exp(\beta_2)$. So, if $\beta_2 >0$ then $P(y_i=1)/P(y_i=0)$ increases and if $\beta_2 < 0$ then $P(y_i=1)/P(y_i=0)$ decreases. Also, if $\beta_2 = 0$ then $P(y_i=1)/P(y_i=0)$ remain unchanged. Hence, the effect of the covariates on the odds is exponentially multiplicative. 
 
 This can also be interpreted in terms of the log-odds, 
 $$
