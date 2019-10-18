@@ -17,15 +17,13 @@ output: html_document
 ##a) 
 From the given dataset we notice that we have grouped data. This means that every covariate vector, $\vec{x_i}$, with $i=1,\ldots,G$, in the design matrix $X$ that are identical, are grouped. In our case this means that every expedition group that has attempted to reach the same mountain falls in the same group. We assume that the number of groups $G$ is much less then the total number of observations $n = \sum \limits_{i=1}^{G} n_i$, where $n_i$ is the number of replicates of $\vec{x_i}$. This is reasonable to assume since there are far more expeditions with people who have attempted reaching a mountain in our dataset, than the number of mountains which is 113 in this case. 
 
-OBS! Not individual oberservations, but expeditions!!!
-
 The response variables $y_i$ are assumed to be independent given the covariates $x_{i1},\ldots, x_{ik}$. We also assume that each data $y_i$ are Bernoulli distributed with $P(y_i = 1) = \pi_i$. For the people attempting there is a certain probability of reaching each mountain which is $\pi_i$. So the attempt is either a success or fail. 
 
 Because the response variables $y_i$ are independent, the absolute frequencies $n_i\bar{y_i}$ of grouped data are binomially distributed, with $E(n_i\bar{y_i}) = n_i\pi_i$ and $Var(n_i\bar{y_i}) = n_i\pi_i(1-\pi_i)$. Hence, we have a binary model because we have two response values, the number of successes and number of fails. The linear predictor in this case is 
 $$
 \eta_i = \beta_0 + \beta_1x_{i1} + \ldots + \beta_kx_{ik} = \mathbf{x_i}^T\mathbf{\beta}, 
 $$
-and $k=2$ in this case. This linear predictor is linked to $\pi_i$ via the response function, 
+and $k=2$. This linear predictor is linked to $\pi_i$ via the response function $h(.)$ where, 
 $$
   \pi_i = h(\eta_i).
 $$
@@ -35,7 +33,7 @@ $$
 $$
 For the canonical link function the log-likelihood function is always concave so that if the maximum likelihood estimator exists it is always unique. Thus, we choose the logit  model as our link function. 
 
-We now fit a glm modelling where the probability that an attempt at reaching a particular summit depends on its height and prominence. 
+We now fit a glm modelling how the probability that an attempt at reaching a particular summit depends on its height and prominence. 
 ```{r, include=TRUE}
   mod <- glm(cbind(success,fail)~height+prominence, family=binomial(link = "logit"))
   summary(mod)
@@ -53,11 +51,13 @@ where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of 
   p <- ncol(mount)-1    #number of estimated regression coefficients
   phi <- deviance/(G-p)
   phi
-  df <- mod$df.residual #find degrees of freedom #DETTE SKAL VEL VÆRE DET SAMME SOM G-P?
+  df <- G-p #find degrees of freedom
   p_val = pchisq(deviance, df, lower.tail = FALSE)
   p_val
 ```
-From the output we see that $\hat{\phi}$ is larger than 1. When doing a p-test we also get that this is significant, thus we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and positive correlation between independent binary observations of the response variable. In this case, the data will be correlated because each individual most likely will belong to a cluster since reaching a mountain often happens in groups with a guide. Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
+From the output we see that $\hat{\phi}$ is larger than 1. We know the deviance is chisquared distributed and we have $G-p = 110$ degrees of freedom. When doing a p-test of the deviance we get that this is significant, thus we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and positive correlation between independent binary observations of the response variable. In this case, the data could be correlated e.g because of similar weather conditions. If the weather is nice in an area it would be easier reaching the summit of several mountains. Also, within a group the expeditions can be correlated because expeditions which are done when the weather is nice will be easier than the attempts when the wether is bad. Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
+
+DEN KORRELASJONEN HER MÅ VI SPØRRE om !! Usikker på om de mener korrelasjon mellom ekspedisjoner på ulike fjell, eller ekspedisjoner innad på et fjell. 
 
 ```{r, include=TRUE}
   mod2 <- glm(cbind(success,fail)~height+prominence, family=quasibinomial(link = "logit"))
@@ -103,7 +103,7 @@ By looking at the computed QAICs we see that the model with both covariates has 
 ##d)
 Now we want to test the significance of each term in the model using both Wald test and likelihood ratio test. 
 ```{r, include=TRUE}
-drop1(mod2, test = "LRT")  #Skal det være mod2 her? 
+drop1(mod2, test = "LRT")  
 summary(mod2)
 
 #Wald test
@@ -157,18 +157,17 @@ ggplot(data3,aes(x=prominence,y = res)) + geom_point()
 
 ```
    
-When plotting the fitted values against the residuals one can see that the data points does seem to be quite randomly spread around the horizontal axis $y=0$. Hence, we can conclude that our model fits good to our data. It also seems like the variance increase, so we do not have homoscedasisty, which means that each response is this case do not have the same variance. This is a contradiction of our assumption that the responses is Bernoulli distributed with the same variance. 
+When plotting the fitted values against the residuals one can see that the data points does seem to be quite randomly spread around the horizontal axis $y=0$. Hence, we can conclude that our model fits good to our data. It also seems like the variance increase, so we do not have homoscedasisty, which means that each response in this case do not have the same variance. This is a contradiction of our assumption that the responses is Bernoulli distributed with the same variance. 
 
 From this residual plot we can also detect possible outliers. The two data points to the left in the plot might seem like they are outliers, but it can also be that we have too few data points in this area to give an reasonable explanation. 
 
 In the figure with the covariate height plotted against the residuals we see no systematic effect, e.g. linear or quadratic trend in the plot. Thus, we cannot say anything about how this covariate will affect the model. The same applies for the covariate prominence when we plot this against the residuals. 
    
 ##f) 
-"The height and the prominence of Mount Everest are both 8848 meters. Compute a prediction for the probability that an attempt at this summit will be successful. First consider the predicted value and its variance on the scale of the linear predictor. Also compute a 95% confidence interval for the predicted value on this scale based on asymptotic normality of β̂ .Transform this confidence interval to the probability scale and explain the theory behind the transformation you're using.""
 
 The height and the prominence of Mount Everest are both 8848 meters. We start by computing a prediction for the probability that an attempt at the summit will be successfull. Then we compute a 95% confidence interval for the predicted value on this scale based on asymptotic normality of $\beta$. We have assumed the responses to be Bernoulli distributed, but when $n$ is large they are approximately normal distributed. Hence, $\beta$ is asymptotic normal distributed.
 
-In mathematical notation we find the confidence interval of $x_{new}^T*\beta$, where $x_{new} = [1,8848,8848]^T$ which is the covariate vector for Mount Everest. Since we assume $\beta$ is asymptotic normal distributed we know the linear combination $x_{new}^T*\beta$ is univariate normal distributed. So by rules of expected value and variance we have,
+In mathematical notation we find the confidence interval of $x_{new}^T\beta$, where $x_{new} = [1,8848,8848]^T$ which is the covariate vector for Mount Everest. Since we assume $\beta$ is asymptotic normal distributed we know the linear combination $x_{new}^T\beta$ is univariate normal distributed. So by rules of expected value and variance we have,
 $$
   x_{new}^T\beta \sim N(x_{new}^T\hat{\beta},x_{new}^T\Sigma x_{new} ),
 $$
@@ -183,6 +182,8 @@ where $SE(\hat{\beta}) = \sqrt{x_{new}^T\Sigma x_{new}}$.
 new = data.frame(height = 8848, prominence = 8848)
 x_new = c(1,8848,8848)
 pred = predict(mod2,newdata=new)            #The predicted probability
+pred_value = plogis(pred)
+pred_value
 
 alpha=0.05
 sigma_matrix= vcov(mod2)                    #The estimated variance matrix of β
@@ -193,34 +194,41 @@ upper = pred + qnorm(1-alpha/2) * se
 ci = c(lower, upper)      #95% confidence interval for the predicted value 
 probci = plogis(ci)       #Transform the confindence interval to probability 
 probci                    # scale
-
-#Calculate CI for second height mountain in data set
-new_second = data.frame(height = 8611, prominence = 4017)
-x_second = c(1,8611,4017)
-pred_sec = predict(mod2,newdata=new_second) 
-se_sec = sqrt(t(x_second)%*%sigma_matrix%*%x_second)  #Standard error of x^T*β
-
-lower_sec = pred_sec - qnorm(1-alpha/2) * se_sec
-upper_sec = pred_sec + qnorm(1-alpha/2) * se_sec
-ci_sec = c(lower_sec, upper_sec)#95% confidence interval for the predicted value 
-probci = plogis(ci_sec)       #Transform the confindence interval to probability 
-probci  
-  
 ```
-In the code above we first found the confidence interval in terms of the linear predictor $\eta = x^T\beta$. To transform the interval to the probability scale we have used the inverse of the logit function. Hence to transform the confidence interval we have used that, 
+The predicted value for the probability of success in an attempt reaching the summit of Mount Everest is $p=0.089$. This is quite low, but it is at least reasonable that the probability of reaching the summit of the World´s higest mountain is low. 
+
+In the code above we also found the confidence interval in terms of the linear predictor $\eta = x^T\beta$. To transform the interval to the probability scale we have used the inverse of the logit function. Hence to transform the confidence interval we have used that, 
 $$
   \pi = \frac{\exp(\eta)}{1+\exp(\eta)}.
 $$
 We then get the interval [0.034,0.213]. 
 
-We know that if the prominence increase, the probability of success is lower. Mount Everest is the only mountain in our data set that have the same height and prominence. This might lead to that the model does not fit the datapoint $x_{new}$ for Mount Everest well. Thus, we might get a interval that has too low values. By comparing with the second highest mountain in our data set, which have covariate vector $x_{sec} = [1,8611,4017]^T$, we would expect that the probabilities of success is not that far from each other. The interval for the second highest mountain is [0.180,0.337]. In addition, when calculating a confidence interval for Mount Everest, but letting the prominence be more similar to the other data points in our dataset, e.g. 5000 instead, we get a interval of [0.099,0.249]. This is much more similiar to the interval for the second highest mountain. Hence, we conclude that our interval [0.034,0.213] gives a bit too low values.
+```{r, include=TRUE}
+#Calculate CI for highest mountain in data set
+new_1 = data.frame(height = 8611, prominence = 4017)
+x_1 = c(1,8611,4017)
+pred_1 = predict(mod2,newdata=new_1) 
+pred_value1 = plogis(pred_1)
+pred_value1
+se_1 = sqrt(t(x_1)%*%sigma_matrix%*%x_1)  #Standard error of x^T*β
+
+lower_1 = pred_1 - qnorm(1-alpha/2) * se_1
+upper_1 = pred_1 + qnorm(1-alpha/2) * se_1
+ci_1 = c(lower_1, upper_1)#95% confidence interval for the predicted value 
+probci = plogis(ci_1)       #Transform the confindence interval to probability 
+probci  
+  
+```
+
+Mount Everest is the only mountain in our data set that have the same height and prominence. The higher the prominence the lower the probability of success. So, in this case since Mount Everest has such a high prominence, the predicted probability of success will be low. In this case the prominence of Mount Everest does not tell us that much, because success of reaching the summit depend on where you start, and in this case the first basecamp of Mount Everst is about 5000 meters over sea level. For the other data, i.e. the other mountains, the prominence tells us more about how many meters you have to hike, and therefore gives a better interpretation of the difficulty of reaching the summit and thus the probability of success. This might lead to that the model does not fit the datapoint $x_{new}$ for Mount Everest well. Thus, we might get a predicted value and an interval that is not that reasonable. 
+
+By comparing with the highest mountain in our data set, which have covariate vector $x_{1} = [1,8611,4017]^T$, we would expect that the probabilities of success for these two mountains are not that far from each other. The interval for the highest mountain in our data set is [0.180,0.337]. In addition, when calculating a confidence interval for Mount Everest, but letting the prominence be more similar to other mountains in Himalaya, e.g. 5000 instead, we get a interval of [0.099,0.249]. This is much more similiar to the interval for the highest mountain. Hence, we see a tendence of that our interval [0.034,0.213] gives a bit too low values.
    
 # Problem 2
 
 In this problem we want to use a generalized linear model to analyse part of the 2018 results from the Norwegian elite football league. 
 ```{r, include=TRUE}
 long <- read.csv("https://www.math.ntnu.no/emner/TMA4315/2019h/eliteserie.csv")
-long
 ```
 ##a)
 We start by fitting a model with attack, defence and home as covariates, to the data.
@@ -229,7 +237,7 @@ mod <- glm(goals ~ attack + defence + home, poisson(link= log), data=long ) #log
 summary(mod)
 ```
 
-We choose the log-linear model as our link function since this is the natural choice for a poisson distribution. Further we assume that the response variables $y_i$, i.e. number of goals, is poisson distributed with parameter $\lambda_i$. We assume that these are independent between the observations. This is not that realistic since two teams playing against each other probably will affect each others chance of making a goal. 
+We choose the log-linear model as our link function since this is the natural choice for a poisson distribution. Further we assume that the response variables $y_i$, i.e. number of goals, is poisson distributed with parameter $\lambda_i$. We assume that these are independent between the observations. This is not that realistic since two teams playing against each other probably will affect each others chance of making a goal. So, pairwise observations will come from the same match, and will thus most likely be correlated.  
 
 Moreover we assume that the only factors who influence the number of goals are the defence team, the attack team and weather they play on the home field or not. This is a very simple model and one could imagine that factors such as weather, illness, ect. can make a difference. 
 
@@ -245,18 +253,17 @@ Hence, the effect of covariates on the rate $\lambda$ is similar to the effects 
 
 The estimates for attack implies how good a team is to score. This means one would want this to be large since that gives more expected goals. The estimate for defence implies how good a team is to defend. This one would want to be as negative as possible. The estimate for home says something about how playing at their homefield affects the teams ability to play well. 
 
-
 ##b)
 
-If good teams play well both in attack and defence one would expect these parameters to be negatively correlated. This is because if a team is good in attack $\beta_{attack}$ will be large and positive, and if it is good in defence then $\beta_{defence}$ will be large and negative. Thus, we get a negative correlation. The same applies if a team is bad in both attack and defence. 
+If good teams play well both in attack and defence one would expect these parameters to be negatively correlated. This is because if a team is good in attack then $\beta_{attack}$ will be large and positive, and if it is good in defence then $\beta_{defence}$ will be large and negative. Thus, we get a negative correlation. The same applies if a team is bad in both attack and defence. 
 
 ```{r, include=TRUE}
-cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) #hva skjer med dummi parameteren? hva tenker du på her? Vi sjekker bare correlasjonen mellom 15 lag så vet ikke hva som skjer med lag nr 16 siden det er dummien, meen tror ikke det har noe å si. Spurte Jarle og vi skal ikke sjekke opp mot home :) Sweet!! :D 
+cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) 
 ```
-As one can see from the output above, the correlation is high. This supports the claim that attack and defence are negatively correlated. This could be a possible source for overdispurtion which we will look at next. DET STEMMER SANT? KOMMENTERE NOE MER HER? 
+As one can see from the output above, the correlation is high. This supports the claim that attack and defence are negatively correlated. This could be a possible source for overdispersion which we will look at next. 
 
 ##c)
-We now want to check if there is overdispersion in the data. To do so we estimate the overdispersion parameter $\phi$, which is given in problem $2b)$. We know this parameter is chisquared distributed and from the summary we can see we have $352$ degrees of freedom, so we use this to calculate the p-value.   
+We now want to check if there is overdispersion in the data. To do so we estimate the overdispersion parameter $\phi$, which is given in problem $1b)$. We know the deviance is chisquared distributed and from the summary we can see we have $352$ degrees of freedom, so we use this to calculate the p-value.  
 ```{r, include=TRUE}
 deviance <- deviance(mod)
 n <- nrow(long)               #number of rows
@@ -269,10 +276,7 @@ p_val
 
 ```
 
-We observe a tendensy of overdispurtion but when calculatign the p-value we see that this p-value is not significant and one can not conclude with overdispersion. Still possible sources of overdispersion could be correlated matches and correlation between the defence and attack parameter. 
-
-POSSIBLE SOURCES OF UNDERDISPERSION? TRENGER VI DET? ER DET NOEN ANNET EN KILDENE TIL OVERDISPURTION?
-Sources?? overdispersion i 1c?? 
+Since $\hat{\phi}$ is right above 1 we observe a tendency of overdispersion, but when calculating the p-value we see that this is not significant and one can not conclude with overdispersion. Still possible sources of underdispersion and overdispersion could be correlated matches and correlation between the defence and attack parameter. Another source can be if one have not included all the covariates that influence the response. Hence, in this case it seems that this simple model with only three covariates is a good enough model. 
 
 ##d)
 Now we want to make a function that gives us the teamrank based on the games played. 
@@ -287,8 +291,6 @@ team_rank <- function(predict_data,n){
   df <- data.frame("points" =zero , "conceded" = zero ,"goals"= zero, "diff" = zero)
   row.names(df) <- teams_char
   
-  
-  
   ### Check goals and conceded
   for (i in (1:n)){
     attack = as.character(predict_data$attack[i])
@@ -296,7 +298,6 @@ team_rank <- function(predict_data,n){
     goals = predict_data$goals[i]
     df[attack, "goals"] = df[attack, "goals"] + goals
     df[defence, "conceded"] = df[defence, "conceded"] + goals
-    
   }
   
   #Count points
@@ -315,7 +316,6 @@ team_rank <- function(predict_data,n){
       df[defence, "points"] = df[defence, "points"] + 1
       df[attack, "points"] = df[attack, "points"] + 1
     }
-    
   }
   
   for (team in teams_char){
@@ -332,7 +332,7 @@ team_rank <- function(predict_data,n){
 rank=team_rank(long, 384) 
 teams = long$attack[1:16]
 d=data.frame("Teams"=as.character(teams),"Rank"=rank)
-d  #Hva med å sortere denne?? DET KAN VI GODT, SÅ LENGE DET IKKE BLIR GJORT INNI FUNKSJONEN. SENERE ER VI AVHENGIG AV SAMME REKKEFLGE PÅ LAGENE NÅR DET BRUKES I SIMULERINGEN. 
+d  
 
 ```
 
@@ -343,7 +343,6 @@ Now we want to simulate the entire tippeliga a thousand times and then compute t
 ```{r, include=TRUE}
 #Find the beta´s from our model
 expected = (predict(mod, long, type="response")) 
-expected
 
 n=480 #Number of matches per tippeliga
 
@@ -379,18 +378,16 @@ for (i in (1:16)){
 teams<-long$attack[1:16]
 team_av_rank<-ex_fin_rank
 av_result <- data.frame("Team"=as.character(teams),"Expected rank"=team_av_rank)
-av_result_sorted <-av_result[order(av_result$Expected),] #order the dataframe by the expected rank NYDELIG!!!! 
+av_result_sorted <-av_result[order(av_result$Expected),] #order the dataframe by the expected rank 
 av_result_sorted 
 ```
 From the output above we see that Rosenborg has the highest expected rank. 
-KOMMENTERE NOE HER? ROSENBORG HAR HAR HØYEST EXPECTED RANK. TROR DET ER FINT MED SETNINGEN OVER :) 
 
 ##f)
 
-One could assume that if each team is equally good at defence and attack these parameters should be equal in absolute value but of opposite sign. This is a linear hypothesis because it can be written as $C\beta = d$. When the $\beta_{attack}$ =$-\beta_{defence}$ this simply gives a $C$ matrix with two ones in every row, one at the place for the teams attack and one at the place for the teams defence. 
+One could assume that if each team is equally good at defence and attack these parameters should be equal in absolute value but of opposite sign. This is a linear hypothesis because it can be written as $C\beta = d$. When $\beta_{attack}$ =$-\beta_{defence}$ this simply gives a $C$ matrix with two ones in every row, one at the place for the teams attack and one at the place for the teams defence. 
 
 In the code below, the construction of C is shown as well as a wald test of this hypotheses.
-
 ```{r, include=TRUE}
 C<- matrix(0,15,32)
 for (i in (1:15)){
@@ -398,18 +395,14 @@ for (i in (1:15)){
   C[i, i+16] = 1
 }
 
-alpha = 0.05 #FIKK FEILMELDING ALPHA NOT DEFINED SÅ LA TIL DENNE
 d <- rep(0,15)
 betahat <- as.matrix(coef(mod))
-betahat
 wald <- t(C %*% (betahat) - d) %*% solve(C %*% vcov(mod) %*% t(C)) %*% (C %*% betahat - d)
 wald
 pchisq(wald, df=15, lower.tail=FALSE)
-qchisq(1-alpha,df=15)  #bruk denne istedenfor pchisq? også forkaste fordi denne er større enn wald? 
-
-#HER SKJØNNER JEG IKKE HELT HVA SOM SKJER MEN DET ER SIKKERT RIKTIG! 
+ 
 ```
-As one can see this gives a high p-value and we do not reject the nullhypothesis for any reasonable significance level. Hence, the simplification of the model to assume that the attack and defence strengths of each team are equal in absolute value but with opposite sign is reasonable. 
+As one can see this gives a high p-value and we do not reject the null hypothesis for any reasonable significance level, say e.g. 0.05. Hence, the hypothesis of possibly doing a simplification of the model and assuming that the attack and defence strengths of each team are equal in absolute value but with opposite sign cannot be rejected. 
 
 
 
