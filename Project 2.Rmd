@@ -15,8 +15,9 @@ output: html_document
   attach(mount)
 ```
 ##a) 
-From the given dataset we notice that we have grouped data. This means that every covariate vector, $\vec{x_i}$, with $i=1,\ldots,G$, in the design matrix $X$ that are identical, are grouped. In our case this means that every expedition group that has attempted to reach the same mountain falls in the same group. We assume that the number of groups $G$ is much less then the total number of observations $n = \sum \limits_{i=1}^{G} n_i$, where $n_i$ is the number of replicates of $\vec{x_i}$. This is reasonable to assume since there are far more expeditions with people who have attempted reaching an mountain in our dataset, than the number of mountains which is 113 in this case. 
-OBS! Not individual iberservations, but expeditions!!!
+From the given dataset we notice that we have grouped data. This means that every covariate vector, $\vec{x_i}$, with $i=1,\ldots,G$, in the design matrix $X$ that are identical, are grouped. In our case this means that every expedition group that has attempted to reach the same mountain falls in the same group. We assume that the number of groups $G$ is much less then the total number of observations $n = \sum \limits_{i=1}^{G} n_i$, where $n_i$ is the number of replicates of $\vec{x_i}$. This is reasonable to assume since there are far more expeditions with people who have attempted reaching a mountain in our dataset, than the number of mountains which is 113 in this case. 
+
+OBS! Not individual oberservations, but expeditions!!!
 
 The response variables $y_i$ are assumed to be independent given the covariates $x_{i1},\ldots, x_{ik}$. We also assume that each data $y_i$ are Bernoulli distributed with $P(y_i = 1) = \pi_i$. For the people attempting there is a certain probability of reaching each mountain which is $\pi_i$. So the attempt is either a success or fail. 
 
@@ -34,7 +35,7 @@ $$
 $$
 For the canonical link function the log-likelihood function is always concave so that if the maximum likelihood estimator exists it is always unique. Thus, we choose the logit  model as our link function. 
 
-We now fit a glm modelling how the probability that an attempt at reaching a particular summit depends on its height and prominence. 
+We now fit a glm modelling where the probability that an attempt at reaching a particular summit depends on its height and prominence. 
 ```{r, include=TRUE}
   mod <- glm(cbind(success,fail)~height+prominence, family=binomial(link = "logit"))
   summary(mod)
@@ -52,8 +53,11 @@ where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of 
   p <- ncol(mount)-1    #number of estimated regression coefficients
   phi <- deviance/(G-p)
   phi
+  df <- mod$df.residual #find degrees of freedom #DETTE SKAL VEL VÆRE DET SAMME SOM G-P?
+  p_val = pchisq(deviance, df, lower.tail = FALSE)
+  p_val
 ```
-From the output we see that $\hat{\phi}$ is larger than 1, thus we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and positive correlation between independent binary observations of the response variable. In this case, the data will be correlated because each individual most likely will belong to a cluster since reaching a mountain often happens in groups with a guide. Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
+From the output we see that $\hat{\phi}$ is larger than 1. When doing a p-test we also get that this is significant, thus we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and positive correlation between independent binary observations of the response variable. In this case, the data will be correlated because each individual most likely will belong to a cluster since reaching a mountain often happens in groups with a guide. Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
 
 ```{r, include=TRUE}
   mod2 <- glm(cbind(success,fail)~height+prominence, family=quasibinomial(link = "logit"))
@@ -239,7 +243,7 @@ $$
 $$
 Hence, the effect of covariates on the rate $\lambda$ is similar to the effects on the odds in the logit model, which is exponentially multiplicative. 
 
-The estimates for attack implies how good a team is to score. This means one would want this to be large since that gives more expected goals. The estimate for defence implies how good a team is to defend. This one would want to be negative. The estimate for home says something about how playing at their homefield affects their ability to play well. 
+The estimates for attack implies how good a team is to score. This means one would want this to be large since that gives more expected goals. The estimate for defence implies how good a team is to defend. This one would want to be as negative as possible. The estimate for home says something about how playing at their homefield affects the teams ability to play well. 
 
 
 ##b)
@@ -247,9 +251,9 @@ The estimates for attack implies how good a team is to score. This means one wou
 If good teams play well both in attack and defence one would expect these parameters to be negatively correlated. This is because if a team is good in attack $\beta_{attack}$ will be large and positive, and if it is good in defence then $\beta_{defence}$ will be large and negative. Thus, we get a negative correlation. The same applies if a team is bad in both attack and defence. 
 
 ```{r, include=TRUE}
-cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) #hva skjer med dummi parameteren? hva tenker du på her? Spurte Jarle og vi skal ikke sjekke opp mot home :) 
+cor.test(mod$coefficients[2:16], mod$coefficients[17:31]) #hva skjer med dummi parameteren? hva tenker du på her? Vi sjekker bare correlasjonen mellom 15 lag så vet ikke hva som skjer med lag nr 16 siden det er dummien, meen tror ikke det har noe å si. Spurte Jarle og vi skal ikke sjekke opp mot home :) Sweet!! :D 
 ```
-As one can see from the output above, the correlation is high. This supports the claim that attack and defence are negatively correlated. KOMMENTERE NOE MER HER? 
+As one can see from the output above, the correlation is high. This supports the claim that attack and defence are negatively correlated. This could be a possible source for overdispurtion which we will look at next. DET STEMMER SANT? KOMMENTERE NOE MER HER? 
 
 ##c)
 We now want to check if there is overdispersion in the data. To do so we estimate the overdispersion parameter $\phi$, which is given in problem $2b)$. We know this parameter is chisquared distributed and from the summary we can see we have $352$ degrees of freedom, so we use this to calculate the p-value.   
@@ -265,7 +269,9 @@ p_val
 
 ```
 
-This p-value is not significant and one can not conclude with overdispersion. Still possible sources of overdispersion could be correlated matches. POSSIBLE SOURCES OF UNDERDISPERSION? 
+We observe a tendensy of overdispurtion but when calculatign the p-value we see that this p-value is not significant and one can not conclude with overdispersion. Still possible sources of overdispersion could be correlated matches and correlation between the defence and attack parameter. 
+
+POSSIBLE SOURCES OF UNDERDISPERSION? TRENGER VI DET? ER DET NOEN ANNET EN KILDENE TIL OVERDISPURTION?
 Sources?? overdispersion i 1c?? 
 
 ##d)
@@ -326,7 +332,7 @@ team_rank <- function(predict_data,n){
 rank=team_rank(long, 384) 
 teams = long$attack[1:16]
 d=data.frame("Teams"=as.character(teams),"Rank"=rank)
-d  #Hva med å sortere denne??
+d  #Hva med å sortere denne?? DET KAN VI GODT, SÅ LENGE DET IKKE BLIR GJORT INNI FUNKSJONEN. SENERE ER VI AVHENGIG AV SAMME REKKEFLGE PÅ LAGENE NÅR DET BRUKES I SIMULERINGEN. 
 
 ```
 
@@ -373,11 +379,11 @@ for (i in (1:16)){
 teams<-long$attack[1:16]
 team_av_rank<-ex_fin_rank
 av_result <- data.frame("Team"=as.character(teams),"Expected rank"=team_av_rank)
-av_result_sorted <-av_result[order(av_result$Expected),] #order the dataframe by the expected rank
+av_result_sorted <-av_result[order(av_result$Expected),] #order the dataframe by the expected rank NYDELIG!!!! 
 av_result_sorted 
 ```
 From the output above we see that Rosenborg has the highest expected rank. 
-KOMMENTERE NOE HER? ROSENBORG HAR HAR HØYEST EXPECTED RANK. 
+KOMMENTERE NOE HER? ROSENBORG HAR HAR HØYEST EXPECTED RANK. TROR DET ER FINT MED SETNINGEN OVER :) 
 
 ##f)
 
@@ -392,6 +398,7 @@ for (i in (1:15)){
   C[i, i+16] = 1
 }
 
+alpha = 0.05 #FIKK FEILMELDING ALPHA NOT DEFINED SÅ LA TIL DENNE
 d <- rep(0,15)
 betahat <- as.matrix(coef(mod))
 betahat
@@ -399,6 +406,8 @@ wald <- t(C %*% (betahat) - d) %*% solve(C %*% vcov(mod) %*% t(C)) %*% (C %*% be
 wald
 pchisq(wald, df=15, lower.tail=FALSE)
 qchisq(1-alpha,df=15)  #bruk denne istedenfor pchisq? også forkaste fordi denne er større enn wald? 
+
+#HER SKJØNNER JEG IKKE HELT HVA SOM SKJER MEN DET ER SIKKERT RIKTIG! 
 ```
 As one can see this gives a high p-value and we do not reject the nullhypothesis for any reasonable significance level. Hence, the simplification of the model to assume that the attack and defence strengths of each team are equal in absolute value but with opposite sign is reasonable. 
 
