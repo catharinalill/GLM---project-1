@@ -112,6 +112,8 @@ d <- c(0,0,0)
 C <- rbind(c(1,0,0),
            c(0,1,0),
            c(0,0,1))
+
+OBS!!! Her skal testing av beta_0, tas vekk, skal kun ha to linjer. Må da ta vekk en kolonne og en rad i design matrix også!!!
 wald <- t(C %*% beta - d) %*% solve(C %*% vcov(mod2) %*% t(C)) %*% (C %*% beta - d)
 wald
 pchisq(wald, df=3, lower.tail=FALSE)
