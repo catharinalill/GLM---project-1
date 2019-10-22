@@ -15,7 +15,7 @@ output: html_document
   attach(mount)
 ```
 ##a) 
-From the given dataset we notice that we have grouped data. This means that every covariate vector, $\vec{x_i}$, with $i=1,\ldots,G$, in the design matrix $X$ that are identical, are grouped. In our case this means that every expedition group that has attempted to reach the same mountain falls in the same group. We assume that the number of groups $G$ is much less then the total number of observations $n = \sum \limits_{i=1}^{G} n_i$, where $n_i$ is the number of replicates of $\vec{x_i}$. This is reasonable to assume since there are far more expeditions with people who have attempted reaching a mountain in our dataset, than the number of mountains which is 113 in this case. 
+From the given dataset we notice that we have grouped data. This means that every covariate vector, $\vec{x_i}$, with $i=1,\ldots,G$, in the design matrix $X$ that are identical, are grouped. In our case this means that every expedition group that has attempted to reach the same mountain falls in the same group. We assume that the number of groups $G$ is much less then the total number of observations $n = \sum \limits_{i=1}^{G} n_i$, where $n_i$ is the number of replicates of $\vec{x_i}$. This is reasonable to assume since there are far more expeditions with people who have attempted reaching a mountain in our dataset, than the number of mountains which is 113 in this case. Hence, $n$ is much larger than $G$.
 
 The response variables $y_i$ are assumed to be independent given the covariates $x_{i1},\ldots, x_{ik}$. We also assume that each data $y_i$ are Bernoulli distributed with $P(y_i = 1) = \pi_i$. For the people attempting there is a certain probability of reaching each mountain which is $\pi_i$. So the attempt is either a success or fail. 
 
@@ -55,7 +55,9 @@ where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of 
   p_val = pchisq(deviance, df, lower.tail = FALSE)
   p_val
 ```
-From the output we see that $\hat{\phi}$ is larger than 1. We know the deviance is chisquared distributed and we have $G-p = 110$ degrees of freedom. When doing a p-test of the deviance we get that this is significant, thus we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and positive correlation between independent binary observations of the response variable. In this case, the data could be correlated e.g because of similar weather conditions. If the weather is nice in an area it would be easier reaching the summit of several mountains. Also, within a group the expeditions can be correlated because expeditions which are done when the weather is nice will be easier than the attempts when the wether is bad. Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
+From the output we see that $\hat{\phi}$ is larger than 1. We know the deviance is chisquared distributed and we have $G-p = 110$ degrees of freedom. When doing a p-test of the deviance we get that this is significant, thus we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and positive correlation between independent binary observations of the response variable. In this case, the data could be correlated e.g because of similar weather conditions. If the weather is nice in an area it would be easier reaching the summit of several mountains. Also, within a group the expeditions can be correlated because expeditions which are done when the weather is nice will be easier than the attempts when the weather is bad.
+Another reason for correlation could be different physical conditions for the people on the different excursion.??
+Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
 
 DEN KORRELASJONEN HER MÅ VI SPØRRE om !! Usikker på om de mener korrelasjon mellom ekspedisjoner på ulike fjell, eller ekspedisjoner innad på et fjell. 
 
@@ -69,7 +71,7 @@ Now we want to choose the best model for our data. This means we compare models 
 $$
   QAIC = -\frac{2l(\hat{\theta})}{\hat{\phi}} +2p, 
 $$
-where $l(\hat{\theta})$ is the likelihood function evaluated at the estimated regression coefficients. We let $\hat{\phi}$ be a common estimate of the overdispersion parameter under the full model, and we count $\phi$ as a estimated parameter. To compute the QAIC for the different models we start by computing the likelihood function after we have fitted non-quasi-likelihood models for the different combinations og covariates. 
+where $l(\hat{\theta})$ is the likelihood function evaluated at the estimated regression coefficients. We let $\hat{\phi}$ be a common estimate of the overdispersion parameter under the full model, and we count $\phi$ as a estimated parameter. To compute the QAIC for the different models we start by computing the likelihood function after we have fitted non-quasi-likelihood models for the different combinations of covariates. 
 ```{r, include=TRUE}
   library(ISwR)
 
@@ -108,19 +110,25 @@ summary(mod2)
 
 #Wald test
 beta <- coef(mod2)
-d <- c(0,0,0)
-C <- rbind(c(1,0,0),
-           c(0,1,0),
+d <- c(0,0)
+C <- rbind(c(0,1,0),
            c(0,0,1))
 
-OBS!!! Her skal testing av beta_0, tas vekk, skal kun ha to linjer. Må da ta vekk en kolonne og en rad i design matrix også!!!
+#OBS!!! Her skal testing av beta_0, tas vekk, skal kun ha to linjer. Må da ta vekk en kolonne og en rad i design matrix også!!!
 wald <- t(C %*% beta - d) %*% solve(C %*% vcov(mod2) %*% t(C)) %*% (C %*% beta - d)
 wald
 pchisq(wald, df=3, lower.tail=FALSE)
 ```
 By use of likelihood ratio test we see that each term in the model is significant. By comparing with the summary from the fitted model we see that both covariates are a bit less significant in the summary output. 
+SPØR OM DET ER NOE MER SOM SKAL KOMMENTERES HER??
 
-By use of the Wald test we see that the p-value is much less than any reasonable significance level. Hence, we reject the null hypothesis that the coefficient estimates are zero. Thus the coefficients are significant. 
+HVA MED Å SKRIVE NOE MER SOM DET ØVERSTE HER I STEDET FOR DET UNDER? OG ER DET RIKTIG SÅNN DRT STÅR NÅ?
+In the Wald test, when we want to test the significance of the regression coefficients we have the linear null hypothesis $H_0: \beta_{height} = \beta_{prominence} = 0$, which can be written as $C\beta = d$. So, in the construction of the $C$-matrix we have a $2\times3$-matrix. From the result we can see that the p-value is much less than any reasonable significance level, say e.g 0.05. Hence, we reject the null hypothesis that the coefficient estimates are zero. Thus the coefficients are significant. 
+
+By use of the Wald test we see that the p-value is much less than any reasonable significance level, say e.g 0.05. Hence, we reject the null hypothesis that the coefficient estimates are zero. Thus the coefficients are significant. 
+
+SKAL DET GJØRES WALD TEST FOR HVER KOEFFESIENT FOR SEG SELV HER??? SPØR JARLE
+HVA ER EGT FORSKJELLEN PÅ DE TESTENE HER? HVA SLAGS NULL HYPOTESER HAR VI I DE ULIKE TILFELLENE??
 
 Our choice of link function was the logit model. To interpret the estimated regression coefficients we look at the odds, 
 $$
@@ -216,13 +224,13 @@ se_1 = sqrt(t(x_1)%*%sigma_matrix%*%x_1)  #Standard error of x^T*β
 
 lower_1 = pred_1 - qnorm(1-alpha/2) * se_1
 upper_1 = pred_1 + qnorm(1-alpha/2) * se_1
-ci_1 = c(lower_1, upper_1)#95% confidence interval for the predicted value 
+ci_1 = c(lower_1, upper_1)  #95% confidence interval for the predicted value 
 probci = plogis(ci_1)       #Transform the confindence interval to probability 
 probci  
   
 ```
 
-Mount Everest is the only mountain in our data set that have the same height and prominence. The higher the prominence the lower the probability of success. So, in this case since Mount Everest has such a high prominence, the predicted probability of success will be low. In this case the prominence of Mount Everest does not tell us that much, because success of reaching the summit depend on where you start, and in this case the first basecamp of Mount Everst is about 5000 meters over sea level. For the other data, i.e. the other mountains, the prominence tells us more about how many meters you have to hike, and therefore gives a better interpretation of the difficulty of reaching the summit and thus the probability of success. This might lead to that the model does not fit the datapoint $x_{new}$ for Mount Everest well. Thus, we might get a predicted value and an interval that is not that reasonable. 
+Mount Everest is the only mountain in our data set that have the same height and prominence. The higher the prominence the lower the probability of success. So, in this case since Mount Everest has such a high prominence, the predicted probability of success will be low. Also, here the prominence of Mount Everest does not tell us that much, because success of reaching the summit depend on where you start, and in this case the first basecamp of Mount Everst is about 5000 meters over sea level. For the other data, i.e. the other mountains, the prominence tells us more about how many meters you have to hike, and therefore gives a better interpretation of the difficulty of reaching the summit and thus the probability of success. This might lead to that the model does not fit the datapoint $x_{new}$ for Mount Everest well. Thus, we might get a predicted value and an interval that is not that reasonable. 
 
 By comparing with the highest mountain in our data set, which have covariate vector $x_{1} = [1,8611,4017]^T$, we would expect that the probabilities of success for these two mountains are not that far from each other. The interval for the highest mountain in our data set is [0.180,0.337]. In addition, when calculating a confidence interval for Mount Everest, but letting the prominence be more similar to other mountains in Himalaya, e.g. 5000 instead, we get a interval of [0.099,0.249]. This is much more similiar to the interval for the highest mountain. Hence, we see a tendence of that our interval [0.034,0.213] gives a bit too low values.
    
@@ -387,7 +395,7 @@ From the output above we see that Rosenborg has the highest expected rank.
 
 ##f)
 
-One could assume that if each team is equally good at defence and attack these parameters should be equal in absolute value but of opposite sign. This is a linear hypothesis because it can be written as $C\beta = d$. When $\beta_{attack}$ =$-\beta_{defence}$ this simply gives a $C$ matrix with two ones in every row, one at the place for the teams attack and one at the place for the teams defence. 
+One could assume that if each team is equally good at defence and attack these parameters should be equal in absolute value, but of opposite sign. This is a linear hypothesis because it can be written as $C\beta = d$. When $\beta_{attack}$ =$-\beta_{defence}$ this simply gives a $C$-matrix with two ones in every row, one at the place for the teams attack and one at the place for the teams defence. 
 
 In the code below, the construction of C is shown as well as a wald test of this hypotheses.
 ```{r, include=TRUE}
