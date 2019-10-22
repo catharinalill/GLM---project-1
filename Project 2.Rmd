@@ -117,7 +117,8 @@ C <- rbind(c(0,1,0),
 #OBS!!! Her skal testing av beta_0, tas vekk, skal kun ha to linjer. Må da ta vekk en kolonne og en rad i design matrix også!!!
 wald <- t(C %*% beta - d) %*% solve(C %*% vcov(mod2) %*% t(C)) %*% (C %*% beta - d)
 wald
-pchisq(wald, df=3, lower.tail=FALSE)
+pchisq(wald, df=2, lower.tail=FALSE)
+#ER DET TO FRIHETSGRADER HER, eller må vi ta hensyn til phi også som en parameter??
 ```
 By use of likelihood ratio test we see that each term in the model is significant. By comparing with the summary from the fitted model we see that both covariates are a bit less significant in the summary output. 
 SPØR OM DET ER NOE MER SOM SKAL KOMMENTERES HER??
