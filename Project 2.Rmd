@@ -96,7 +96,6 @@ where $l(\hat{\theta})$ is the likelihood function evaluated at the estimated re
   QAIC_mod00 = -2*likelihood00/phi+2*(p-1)
   QAIC_mod00
   
-  #SKAL VI OGSÅ HA MED AIC FOR HVER MODEL HER??
 ```
 By looking at the computed QAICs we see that the model with both covariates has the lowest value. Hence, we choose the full model. 
 
