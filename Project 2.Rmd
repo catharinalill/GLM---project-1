@@ -165,7 +165,7 @@ In the Wald test, we want to test the significance of the regression coefficient
 $$
   H_0: \beta_{i} = 0 \quad  \textrm{vs.} \quad  H_1: \beta_{i} \neq 0,
 $$
-where $i = \{0, height, prominence\}$. When doing these test, for the covariate height the p-value is very small, so we reject the null hypothesis. Thus, the height is a significant covariate. For the prominence the p-value is right above 0.05. So, here one have to decide which significance level to use. If one uses 0.05, we cannot reject $H_0$ so prominence is not significant. But, if one uses a significance level that is a bit higher, we can reject the null hypothesis and then prominence is also a significant covariate. Either way this tells us that height is the most significant covariate in the model. The result of these test are also shown in the output of the summary of the full model, in the $Pr(>|t|)$ column. We see that these results coincide with the Wald test done manually.
+where $i = \{0, height, prominence\}$. When doing this test for the covariate height the p-value is very small, so we reject the null hypothesis. Thus, the height is a significant covariate. For the prominence the p-value is right above 0.05. So, here one have to decide which significance level to use. If one uses 0.05, we cannot reject $H_0$ so prominence is not significant. But, if one uses a significance level that is a bit higher, we can reject the null hypothesis and then prominence is also a significant covariate. Either way this tells us that height is the most significant covariate in the model. The result of these test are also shown in the output of the summary of the full model, in the $Pr(>|t|)$ column. We see that these results coincide with the Wald test done manually.
 
 If we compare the Wald-tests against the F-tests we see that the results are quite similar. There are some small differences in the test statistics tests due to using asymptotic distributions, but the conclusion of the tests are the same.
 
@@ -295,8 +295,9 @@ $$
 $$
 We then get the interval [0.034,0.213]. 
 
+None of the mountains in the data set have the same height and prominence. The higher the prominence the lower the probability of success. So, in this case since Mount Everest has such a high prominence, the predicted probability of success will be low. Also, here the prominence of Mount Everest does not tell us that much, because success of reaching the summit depend on where you start, and in this case the first basecamp of Mount Everst is about 5000 meters over sea level. For the other data, i.e. the other mountains, the prominence tells us more about how many meters you have to hike, and therefore gives a better interpretation of the difficulty of reaching the summit and thus the probability of success. This might lead to that the model does not fit the datapoint $x_{new}$ for Mount Everest well. Thus, we might get a predicted value and an interval that is not that reasonable. 
 ```{r, include=TRUE}
-#Calculate CI for highest mountain in data set
+#Calculate CI for highest mountain in the data set
 new_1 = data.frame(height = 8611, prominence = 4017)
 x_1 = c(1,8611,4017)
 pred_1 = predict(mod2,newdata=new_1) 
@@ -311,16 +312,9 @@ probci = plogis(ci_1)       #Transform the confindence interval to probability
 probci  
 ```
 
-Mount Everest is the only mountain in our data set that have the same height and prominence. The higher the prominence the lower the probability of success. So, in this case since Mount Everest has such a high prominence, the predicted probability of success will be low. Also, here the prominence of Mount Everest does not tell us that much, because success of reaching the summit depend on where you start, and in this case the first basecamp of Mount Everst is about 5000 meters over sea level. For the other data, i.e. the other mountains, the prominence tells us more about how many meters you have to hike, and therefore gives a better interpretation of the difficulty of reaching the summit and thus the probability of success. This might lead to that the model does not fit the datapoint $x_{new}$ for Mount Everest well. Thus, we might get a predicted value and an interval that is not that reasonable. 
-
-
-SKAL DET VÆRE SECOND HIGHEST HER?
-
 By comparing with the highest mountain in our data set, which have covariate vector $x_{1} = [1,8611,4017]^T$, we would expect that the probabilities of success for these two mountains are not that far from each other. The interval for the highest mountain in our data set is [0.180,0.337]. In addition, when calculating a confidence interval for Mount Everest, but letting the prominence be more similar to other mountains in Himalaya, e.g. 5000 instead, we get a interval of [0.099,0.249]. This is much more similiar to the interval for the highest mountain.This could mean that our initial interval [0.034,0.213] gives values a bit to low. 
 
-?SETNINGEN OVER ISTEDENFOR? :) 
-Hence, we see a tendence of that our interval [0.034,0.213] gives a bit too low values.
-   
+HVOR REGNER VI UT CI TIL NYE MOUNT EVEREST?
 # Problem 2
 
 In this problem we want to use a generalized linear model to analyse part of the 2018 results from the Norwegian elite football league. 
