@@ -27,11 +27,11 @@ and $k=2$. This linear predictor is linked to $\pi_i$ via the response function 
 $$
   \pi_i = h(\eta_i).
 $$
-The canonical link function for a binary regression model is the logit model, which is given by
+The inverse of the response function is called the link function. The canonical link function for a binary regression model is the logit model, so the response function is the inverse logit model. Hence, we have
 $$
   \pi_i = \frac{\exp({\eta_i})}{1+\exp({\eta_i})}.
 $$
-For the canonical link function the log-likelihood function is always concave so that if the maximum likelihood estimator exists it is always unique. Thus, we choose the logit  model as our link function. 
+For the canonical link function the log-likelihood function is always concave so that if the maximum likelihood estimator exists it is always unique. This is the reason for choosing the logit model as our link function. 
 
 We now fit a glm modelling how the probability that an attempt at reaching a particular summit depends on its height and prominence. 
 ```{r, include=TRUE}
@@ -55,7 +55,7 @@ where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of 
   p_val = pchisq(deviance, df, lower.tail = FALSE)
   p_val
 ```
-From the output we see that $\hat{\phi}$ is larger than 1 which might imply overdispertion. We know the deviance is chisquared distributed and we have $G-p = 110$ degrees of freedom. When doing a p-test of the deviance we get that this is significant, hence we conclude with overdispersion in our data. Reasons for overdispersion can be unobserved heterogeneity and correlation between independent binary observations of the response variable. In this case, the data could be correlated e.g because of similar weather conditions. It would be easier for the expeditions to reach the summit if the weather is nice. The different expeditions within a group could also be correlated because of each other. If there are several expeditions attempting to reach the same mountain simultaneous it may affect each expeditions probability to reach the summit. It could be more difficult to reach the summit because of for example queus, but the expeditions could also help each other to reach the summit. 
+From the output we see that $\hat{\phi}$ is larger than 1 which might imply overdispersion. We know the deviance is chisquared distributed and we have $G-p = 110$ degrees of freedom. When doing a p-test of the deviance we get that this is significant, hence we conclude with overdispersion in our data. Reasons for overdispersion can be unobserved heterogeneity and correlation between independent binary observations of the response variable. In this case, the data could be correlated e.g because of similar weather conditions. It would be easier for the expeditions to reach the summit if the weather is nice. The different expeditions within a group could also be correlated because of each other. If there are several expeditions attempting to reach the same mountain simultaneously it may affect each expeditions probability to reach the summit. For example it could be more difficult to reach the summit because of queues, or the expeditions could also help each other so reaching the summit gets easier. 
 
 Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
    
@@ -167,7 +167,7 @@ $$
 $$
 where $i = \{0, height, prominence\}$. When doing this test for the covariate height the p-value is very small, so we reject the null hypothesis. Thus, the height is a significant covariate. For the prominence the p-value is right above 0.05. So, here one have to decide which significance level to use. If one uses 0.05, we cannot reject $H_0$ so prominence is not significant. But, if one uses a significance level that is a bit higher, we can reject the null hypothesis and then prominence is also a significant covariate. Either way this tells us that height is the most significant covariate in the model. The result of these test are also shown in the output of the summary of the full model, in the $Pr(>|t|)$ column. We see that these results coincide with the Wald test done manually.
 
-If we compare the Wald-tests against the F-tests we see that the results are quite similar. There are some small differences in the test statistics tests due to using asymptotic distributions, but the conclusion of the tests are the same.
+If we compare the Wald-tests against the F-tests we see that the results are quite similar. There are some small differences in the test statistics due to using asymptotic distributions, but the conclusion of the tests are the same.
 
 <!---- 
 ```{r, include=TRUE}
@@ -367,7 +367,7 @@ p_val
 
 ```
 
-Since $\hat{\phi}$ is right above 1 we observe a tendency of overdispersion, but when calculating the p-value we see that this is not significant and one can not conclude with overdispersion. Still possible sources of underdispersion and overdispersion could be correlated matches and correlation between the defence and attack parameter. Another source can be if one have not included all the covariates that influence the response. Hence, in this case it seems that this simple model with only three covariates is a good enough model. 
+Since $\hat{\phi}$ is right above 1 we observe a tendency of overdispersion, but when calculating the p-value we see that this is not significant and one can not conclude with overdispersion. Still possible sources of underdispersion and overdispersion could be correlated matches and correlation between the defence and attack parameter. Another source could be if one have not included all the covariates that influence the response. Hence, in this case it seems like this simple model with only three covariates is a good enough model. 
 
 ##d)
 Now we want to make a function that gives us the teamrank based on the games played. 
@@ -429,7 +429,7 @@ d
 
 ##e)
 
-Now we want to simulate the entire tippeliga a thousand times and then compute the ranking in each case before computing an average ranking per team.  
+Further we want to simulate the entire tippeliga a thousand times and then compute the ranking in each case before computing an average ranking per team.  
 
 ```{r, include=TRUE}
 #Find the beta´s from our model
