@@ -113,11 +113,29 @@ anova(mod2, mod_height, test = "F")
 anova(mod2, mod_prominence, test = "F")
 
 #F-tests by hand 
+p1 <- 3
+p0 <- 2
+n <- G
+df1 <- p1-p0 
+df2 <- n-p1
+#Testing full model vs model with only height as covariate
+D_0 <- deviance(mod_height)
+D_1 <- deviance(mod2)
 
+F_stat <- ((D_0-D_1)/(df1))/((D_1/(df2)))
+p_val_height <- pf(F_stat, df1,df2,lower.tail = FALSE)                              
+p_val_height
 
+#Testing full model vs model with only prominence as covariate
+D_0 <- deviance(mod_prominence)
+
+F_stat <- ((D_0-D_1)/(df1))/((D_1/(df2)))
+p_val_prominence <- pf(F_stat, df1,df2,lower.tail = FALSE)  
+p_val_prominence
 
 #F-test
-drop1(mod2, test = "F")  #We have a quasi-model so we need F-test, instead of LRT-test
+drop1(mod2, test = "F")  #We have a quasibinomial-model so we need F-test, instead of LRT-test
+
 
 #Wald test by hand 
 beta = mod2$coefficients[1:3]
@@ -125,14 +143,17 @@ se_beta = summary(mod2)$coefficients[,2]
 wald <- beta/se_beta  #Calculate 3 Wald statistics for beta_0, beta_height og beta_prominence
 wald
 
-p <- 3
-df <- n-p   #n?????
-p_val <- pf(wald, df,df,df, lower.tail = FALSE)
-p_val
+df <- n-p1  
+p_val_0 <- 2*pt(wald[1], df, lower.tail = FALSE) #Multiply with 2 to get a two-sided test
+p_val_height <- 2*pt(wald[2], df, lower.tail = TRUE)
+p_val_prominence <- 2*pt(wald[3], df, lower.tail = TRUE)
+
+p_val_0
+p_val_height
+p_val_prominence
 
 #Wald test
 summary(mod2) 
-
 
 ```
 
