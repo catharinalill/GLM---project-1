@@ -169,50 +169,6 @@ where $i = \{0, height, prominence\}$. When doing this test for the covariate he
 
 If we compare the Wald-tests against the F-tests we see that the results are quite similar. There are some small differences in the test statistics due to using asymptotic distributions, but the conclusion of the tests are the same.
 
-<!---- 
-```{r, include=TRUE}
-#F-test for covariate height
-anova(mod2, mod_height, test = "F")
-#F-test for covariate prominence
-anova(mod2, mod_prominence, test = "F")
-
-#Wald test
-beta <- coef(mod2)
-d <- c(0,0)
-C <- rbind(c(0,1,0),
-           c(0,0,1))
-
-#OBS!!! Her skal testing av beta_0, tas vekk, skal kun ha to linjer. Må da ta vekk en kolonne og en rad i design matrix også!!!
-#wald <- t(C %*% beta - d) %*% solve(C %*% vcov(mod2) %*% t(C)) %*% (C %*% beta - d)
-#wald
-#pchisq(wald, df=2, lower.tail=FALSE)
-#t-test vs 
-#LRT, tilpasse to modeller, H0 uten og H1 med kovariaten og sammenligner likelihood
-#Wald, Z = beta/SE(beta), std normal eller med overdispersjon, T = beta/SEbeta estimator 
-
-#LRT uten overdispersjon, 2(l(beta0)-l(beta1))
-#LRT med overdisp, F = (D0-D1)/(p1-po)/D1/(n-p1)
-#anova(mod0,mod1, test = "F")
-#ER DET TO FRIHETSGRADER HER, eller må vi ta hensyn til phi også som en parameter?? skal ikke tas hensyn til her
-```
-each term in the model is significant. By comparing with the summary from the fitted model we see that both covariates are a bit less significant in the summary output. 
-SPØR OM DET ER NOE MER SOM SKAL KOMMENTERES HER??
-
-HVA MED Å SKRIVE NOE MER SOM DET ØVERSTE HER I STEDET FOR DET UNDER? OG ER DET RIKTIG SÅNN DRT STÅR NÅ?
-We then get a test-statistic
-$$
-  T = 
-$$
-
-From the result we can see that the p-value is much less than any reasonable significance level, say e.g 0.05. Hence, we reject the null hypothesis that the coefficient estimates are zero. Thus the coefficients are significant. 
-
-By use of the Wald test we see that the p-value is much less than any reasonable significance level, say e.g 0.05. Hence, we reject the null hypothesis that the coefficient estimates are zero. Thus the coefficients are significant. 
-
-SKAL DET GJØRES WALD TEST FOR HVER KOEFFESIENT FOR SEG SELV HER??? SPØR JARLE
-HVA ER EGT FORSKJELLEN PÅ DE TESTENE HER? HVA SLAGS NULL HYPOTESER HAR VI I DE ULIKE TILFELLENE??
-Skal gjøres for hver kovariat
-----> 
-
 Further we give interpretations of the estimated regression slope parameters. Our choice of link function was the logit model. To interpret the estimated regression coefficients we look at the odds, 
 $$
   \frac{\pi_i}{1-\pi_i} = \frac{P(y_i=1 | x_i)}{P(y_i=0 | x_i)} = \exp(\beta_0)\cdot \exp(x_{i1}\beta_1)\cdot \ldots \cdot \exp(x_{ik}\beta_k) = \exp(\eta_i). 
@@ -270,7 +226,7 @@ $$
 where $SE(\hat{\beta}) = \sqrt{x_{new}^T\Sigma x_{new}}$.
 
 ```{r, include=TRUE}
-#Calculate CI for a predicted value
+#Calculate predicted probability and CI for Mount Everest
 new = data.frame(height = 8848, prominence = 8848)
 x_new = c(1,8848,8848)
 pred = predict(mod2,newdata=new)            #The predicted probability
@@ -297,7 +253,7 @@ We then get the interval [0.034,0.213].
 
 None of the mountains in the data set have a prominence that is close to the height. The higher the prominence the lower the probability of success. So, in this case since Mount Everest has such a high prominence, the predicted probability of success will be low. Also, here the prominence of Mount Everest does not tell us that much, because success of reaching the summit depend on where you start, and in this case the first basecamp of Mount Everst is about 5000 meters over sea level. For the other data, i.e. the other mountains, the prominence tells us more about how many meters you have to hike, and therefore gives a better interpretation of the difficulty of reaching the summit and thus the probability of success. This might lead to that the model does not fit the datapoint $x_{new}$ for Mount Everest well. Thus, we might get a predicted value and an interval that is not that reasonable. 
 ```{r, include=TRUE}
-#Calculate CI for highest mountain in the data set
+#Calculate predicted probabilitiy and CI for highest mountain in the data set
 new_1 = data.frame(height = 8611, prominence = 4017)
 x_1 = c(1,8611,4017)
 pred_1 = predict(mod2,newdata=new_1) 
@@ -310,11 +266,24 @@ upper_1 = pred_1 + qnorm(1-alpha/2) * se_1
 ci_1 = c(lower_1, upper_1)  #95% confidence interval for the predicted value 
 probci = plogis(ci_1)       #Transform the confindence interval to probability 
 probci  
+
+#Calculate predicted probability and CI for Mount Everest with prominence=5000
+new_2 = data.frame(height = 8848, prominence = 5000)
+x_2 = c(1,8848,5000)
+pred_2 = predict(mod2,newdata=new_2) 
+pred_value2 = plogis(pred_2)
+pred_value2
+se_2 = sqrt(t(x_2)%*%sigma_matrix%*%x_2)  #Standard error of x^T*β
+
+lower_2 = pred_2 - qnorm(1-alpha/2) * se_2
+upper_2 = pred_2 + qnorm(1-alpha/2) * se_2
+ci_2 = c(lower_2, upper_2)  #95% confidence interval for the predicted value 
+probci = plogis(ci_2)       #Transform the confindence interval to probability 
+probci  
 ```
 
-By comparing with the highest mountain in our data set, which have covariate vector $x_{1} = [1,8611,4017]^T$, we would expect that the probabilities of success for these two mountains are not that far from each other. The interval for the highest mountain in our data set is [0.180,0.337]. In addition, when calculating a confidence interval for Mount Everest, but letting the prominence be more similar to other mountains in Himalaya, e.g. 5000 instead, we get a interval of [0.099,0.249]. This is much more similiar to the interval for the highest mountain.This could mean that our initial interval [0.034,0.213] gives values a bit too low. 
+By comparing with the highest mountain in our data set, which have covariate vector $x_{1} = [1,8611,4017]^T$, we would expect that the probabilities of success for these two mountains are not that far from each other. The interval for the highest mountain in our data set is [0.180,0.337]. In addition, when calculating a confidence interval for Mount Everest, but letting the prominence be more similar to other mountains in Himalaya, e.g. 5000 instead, we get a interval of [0.099,0.249]. This is much more similiar to the interval for the highest mountain in our data set. This could mean that our initial interval [0.034,0.213] gives values a bit too low. 
 
-HVOR REGNER VI UT CI TIL NYE MOUNT EVEREST?
 # Problem 2
 
 In this problem we want to use a generalized linear model to analyse part of the 2018 results from the Norwegian elite football league. 
