@@ -58,7 +58,7 @@ where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of 
 From the output we see that $\hat{\phi}$ is larger than 1. We know the deviance is chisquared distributed and we have $G-p = 110$ degrees of freedom. When doing a p-test of the deviance we get that this is significant, thus we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and correlation between independent binary observations of the response variable. In this case, the data could be correlated e.g because of similar weather conditions. It would be easier for the expeditions to reach the summit if the weather is nice. The different expeditions within a group could also be correlated because of each other. If it is several expeditions attempting to reach the same mountain simultaneous it may affect each expeditions probability to reach the summit. It could be more difficult to reach the summit, but the expeditions could also help each other to reach the summit. 
 
 Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
-
+   
 ```{r, include=TRUE}
   mod2 <- glm(cbind(success,fail)~height+prominence, family=quasibinomial(link = "logit"))
   summary(mod2)
@@ -107,11 +107,6 @@ Now we want to test the significance of each term in the model using both Wald t
 mod_height <- glm(cbind(success,fail)~height, family=quasibinomial(link = "logit"))
 mod_prominence <- glm(cbind(success,fail)~prominence, family=quasibinomial(link = "logit"))
 
-#F-test for covariate height
-anova(mod2, mod_height, test = "F")
-#F-test for covariate prominence
-anova(mod2, mod_prominence, test = "F")
-
 #F-tests by hand 
 p1 <- 3
 p0 <- 2
@@ -123,15 +118,15 @@ D_0 <- deviance(mod_height)
 D_1 <- deviance(mod2)
 
 F_stat <- ((D_0-D_1)/(df1))/((D_1/(df2)))
-p_val_height <- pf(F_stat, df1,df2,lower.tail = FALSE)                              
-p_val_height
+p_val_prominence <- pf(F_stat, df1,df2,lower.tail = FALSE)                              
+p_val_prominence
 
 #Testing full model vs model with only prominence as covariate
 D_0 <- deviance(mod_prominence)
 
 F_stat <- ((D_0-D_1)/(df1))/((D_1/(df2)))
-p_val_prominence <- pf(F_stat, df1,df2,lower.tail = FALSE)  
-p_val_prominence
+p_val_height <- pf(F_stat, df1,df2,lower.tail = FALSE)  
+p_val_height
 
 #F-test
 drop1(mod2, test = "F")  #We have a quasibinomial-model so we need F-test, instead of LRT-test
@@ -141,7 +136,6 @@ drop1(mod2, test = "F")  #We have a quasibinomial-model so we need F-test, inste
 beta = mod2$coefficients[1:3]
 se_beta = summary(mod2)$coefficients[,2]
 wald <- beta/se_beta  #Calculate 3 Wald statistics for beta_0, beta_height og beta_prominence
-wald
 
 df <- n-p1  
 p_val_0 <- 2*pt(wald[1], df, lower.tail = FALSE) #Multiply with 2 to get a two-sided test
@@ -157,26 +151,30 @@ summary(mod2)
 
 ```
 
-In the F-test we have nested models $H_0$ and $H_1$. Under $H_0$, we then have thes test statistic
+In the F-test we have nested models $H_0$ and $H_1$. Under $H_0$, we then have the test statistic
 $$
   \frac{(D_0-D_1)/(p_1-p_0)}{D_1/(n-p_1)} \sim F_{p_1-p_0,n-p_1}.
 $$
-where $D_i$ is the deviance for the model under $H_i$, and $p_i$ is the number of estimated regression coefficients for the model under $H_i$. So, here $p_1$ = 3, and $p_0$ = 2. 
+where $D_i$ is the deviance for the model under $H_i$, and $p_i$ is the number of estimated regression coefficients for the model under $H_i$. So, here $p_1$ = 3, $p_0$ = 2 and $n = G = 113$. 
  
-By use of F-test we see that when testing $H_0:$ model with only height as covariate is better than $H_1:$ the full model, we get a p-value that is greater than a significance level of e.g. 0.05. Thus we cannot reject $H_0$ and we cannot say that the model with only height as a covariate is any worse than the full model. This indicates that the covariate prominence does not tell us that much. 
+By use of F-test we see that when testing $H_0:$ model with only height as covariate is better than $H_1:$ the full model, we get a p-value that is greater than a significance level of e.g. 0.05. Thus we cannot reject $H_0$ and we cannot say that the model with only height as a covariate is any worse than the full model. This indicates that the covariate prominence does not tell us that much, and thus that it might not be significant. 
 
-From the second F-test when testing $H_0:$ model with only prominence as covariate is better than $H_1:$ the full model, we get a p-value that is smaller than a significance level of 0.05. Thus we reject the null hypothesis that the model with only prominence is better than the full model. That is, height is an important covariate in this model and is thus significant. 
+From the second F-test when testing $H_0:$ model with only prominence as covariate is better than $H_1:$ the full model, we get a p-value that is smaller than a significance level of 0.05. Thus we reject the null hypothesis that the model with only prominence is better than the full model. That is, height is an important covariate in this model and is thus significant. We get the same results of the F-test when we use drop1. 
 
 In the Wald test, we want to test the significance of the regression coefficients and thus we have the hypothesis 
 $$
   H_0: \beta_{i} = 0 \quad  \textrm{vs.} \quad  H_1: \beta_{i} \neq 0,
 $$
-where $i = \{0, height, prominence\}$. The result of these test are shown in the output of the summary of the full model. For the covariate height the p-value is very small, so we reject the null hypothesis. Thus, the height is a significant covariate. For the prominence the p-value is right above 0.05. So, here one have to decide which significance level to use. If one uses 0.05, we cannot reject $H_0$ so prominence is not significant. But, if one uses a significance level that is a bit higher, we can reject the null hypothesis and then prominence is also a significant covariate. Either way this tells us that height is the most significant covariate in the model. 
+where $i = \{0, height, prominence\}$. When doing these test, for the covariate height the p-value is very small, so we reject the null hypothesis. Thus, the height is a significant covariate. For the prominence the p-value is right above 0.05. So, here one have to decide which significance level to use. If one uses 0.05, we cannot reject $H_0$ so prominence is not significant. But, if one uses a significance level that is a bit higher, we can reject the null hypothesis and then prominence is also a significant covariate. Either way this tells us that height is the most significant covariate in the model. The result of these test are also shown in the output of the summary of the full model, in the $Pr(>|t|)$ column. We see that these results coincide with the Wald test done manually.
 
-If we compare the wald-tests against the F-tests we see that the results are quite similar. There are some small differences in the test statistics tests due to using asymptotic distributions, but the conclusion of the tests are the same.
+If we compare the Wald-tests against the F-tests we see that the results are quite similar. There are some small differences in the test statistics tests due to using asymptotic distributions, but the conclusion of the tests are the same.
 
 <!---- 
 ```{r, include=TRUE}
+#F-test for covariate height
+anova(mod2, mod_height, test = "F")
+#F-test for covariate prominence
+anova(mod2, mod_prominence, test = "F")
 
 #Wald test
 beta <- coef(mod2)
