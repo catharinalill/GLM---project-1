@@ -55,7 +55,7 @@ where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of 
   p_val = pchisq(deviance, df, lower.tail = FALSE)
   p_val
 ```
-From the output we see that $\hat{\phi}$ is larger than 1. We know the deviance is chisquared distributed and we have $G-p = 110$ degrees of freedom. When doing a p-test of the deviance we get that this is significant, thus we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and correlation between independent binary observations of the response variable. In this case, the data could be correlated e.g because of similar weather conditions. It would be easier for the expeditions to reach the summit if the weather is nice. The different expeditions within a group could also be correlated because of each other. If it is several expeditions attempting to reach the same mountain simultaneous it may affect each expeditions probability to reach the summit. It could be more difficult to reach the summit, but the expeditions could also help each other to reach the summit. 
+From the output we see that $\hat{\phi}$ is larger than 1 which might imply overdispertion. We know the deviance is chisquared distributed and we have $G-p = 110$ degrees of freedom. When doing a p-test of the deviance we get that this is significant, hence we conclude with overdispersion in our data. Reasons for overdispersion can be unobserved heterogeneity and correlation between independent binary observations of the response variable. In this case, the data could be correlated e.g because of similar weather conditions. It would be easier for the expeditions to reach the summit if the weather is nice. The different expeditions within a group could also be correlated because of each other. If there are several expeditions attempting to reach the same mountain simultaneous it may affect each expeditions probability to reach the summit. It could be more difficult to reach the summit because of for example queus, but the expeditions could also help each other to reach the summit. 
 
 Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
    
@@ -157,7 +157,7 @@ $$
 $$
 where $D_i$ is the deviance for the model under $H_i$, and $p_i$ is the number of estimated regression coefficients for the model under $H_i$. So, here $p_1$ = 3, $p_0$ = 2 and $n = G = 113$. 
  
-By use of F-test we see that when testing $H_0:$ model with only height as covariate is better than $H_1:$ the full model, we get a p-value that is greater than a significance level of e.g. 0.05. Thus we cannot reject $H_0$ and we cannot say that the model with only height as a covariate is any worse than the full model. This indicates that the covariate prominence does not tell us that much, and thus that it might not be significant. 
+By use of the F-test we see that when testing $H_0:$ model with only height as covariate is better than $H_1:$ the full model, we get a p-value that is greater than a significance level of e.g. 0.05. Thus we cannot reject $H_0$ and we cannot say that the model with only height as a covariate is any worse than the full model. This indicates that the covariate prominence does not tell us that much, and thus that it might not be significant. 
 
 From the second F-test when testing $H_0:$ model with only prominence as covariate is better than $H_1:$ the full model, we get a p-value that is smaller than a significance level of 0.05. Thus we reject the null hypothesis that the model with only prominence is better than the full model. That is, height is an important covariate in this model and is thus significant. We get the same results of the F-test when we use drop1. 
 
@@ -250,8 +250,7 @@ ggplot(data3,aes(x=prominence,y = res)) + geom_point()
 
 ```
    
-When plotting the fitted values against the residuals one can see that the data points does seem to be quite randomly spread around the horizontal axis $y=0$. Hence, we can conclude that our model fits good to our data. It also seems like the variance increase, so we do not have homoscedasisty, which means that each response in this case do not have the same variance. This is a contradiction of our assumption that the responses is Bernoulli distributed with the same variance. 
-
+When plotting the fitted values against the residuals one can see that the data points seem to be quite randomly spread around the horizontal axis $y=0$. Hence, we can conclude that our model fits good to our data. It also seems like the variance increase, so we do not have homoscedasisty, which means that each response in this case do not have the same variance. This is a contradiction of our assumption that the responses is Bernoulli distributed with the same variance. 
 From this residual plot we can also detect possible outliers. The two data points to the left in the plot might seem like they are outliers, but it can also be that we have too few data points in this area to give an reasonable explanation. 
 
 In the figure with the covariate height plotted against the residuals we see no systematic effect, e.g. linear or quadratic trend in the plot. Thus, we cannot say anything about how this covariate will affect the model. The same applies for the covariate prominence when we plot this against the residuals. 
@@ -314,7 +313,13 @@ probci
 
 Mount Everest is the only mountain in our data set that have the same height and prominence. The higher the prominence the lower the probability of success. So, in this case since Mount Everest has such a high prominence, the predicted probability of success will be low. Also, here the prominence of Mount Everest does not tell us that much, because success of reaching the summit depend on where you start, and in this case the first basecamp of Mount Everst is about 5000 meters over sea level. For the other data, i.e. the other mountains, the prominence tells us more about how many meters you have to hike, and therefore gives a better interpretation of the difficulty of reaching the summit and thus the probability of success. This might lead to that the model does not fit the datapoint $x_{new}$ for Mount Everest well. Thus, we might get a predicted value and an interval that is not that reasonable. 
 
-By comparing with the highest mountain in our data set, which have covariate vector $x_{1} = [1,8611,4017]^T$, we would expect that the probabilities of success for these two mountains are not that far from each other. The interval for the highest mountain in our data set is [0.180,0.337]. In addition, when calculating a confidence interval for Mount Everest, but letting the prominence be more similar to other mountains in Himalaya, e.g. 5000 instead, we get a interval of [0.099,0.249]. This is much more similiar to the interval for the highest mountain. Hence, we see a tendence of that our interval [0.034,0.213] gives a bit too low values.
+
+SKAL DET VÆRE SECOND HIGHEST HER?
+
+By comparing with the highest mountain in our data set, which have covariate vector $x_{1} = [1,8611,4017]^T$, we would expect that the probabilities of success for these two mountains are not that far from each other. The interval for the highest mountain in our data set is [0.180,0.337]. In addition, when calculating a confidence interval for Mount Everest, but letting the prominence be more similar to other mountains in Himalaya, e.g. 5000 instead, we get a interval of [0.099,0.249]. This is much more similiar to the interval for the highest mountain.This could mean that our initial interval [0.034,0.213] gives values a bit to low. 
+
+?SETNINGEN OVER ISTEDENFOR? :) 
+Hence, we see a tendence of that our interval [0.034,0.213] gives a bit too low values.
    
 # Problem 2
 
@@ -331,9 +336,9 @@ summary(mod)
 
 We choose the log-linear model as our link function since this is the natural choice for a poisson distribution. Further we assume that the response variables $y_i$, i.e. number of goals, is poisson distributed with parameter $\lambda_i$. We assume that these are independent between the observations. This is not that realistic since two teams playing against each other probably will affect each others chance of making a goal. So, pairwise observations will come from the same match, and will thus most likely be correlated.  
 
-Moreover we assume that the only factors who influence the number of goals are the defence team, the attack team and weather they play on the home field or not. This is a very simple model and one could imagine that factors such as weather, illness, ect. can make a difference. 
+Moreover we assume that the only factors which influences the number of goals are the defence team, the attack team and weather they play on the home field or not. This is a very simple model and one could imagine that factors such as weather, illness, ect. can make a difference. 
 
-The parameter in the model is given by
+The parameter in the models are given by
 $$
   \lambda_i = \exp(x_i^T\beta) =\exp(\eta_i) ,
 $$
