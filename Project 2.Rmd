@@ -55,13 +55,9 @@ where $D$ is the deviance, $G$ is the number of groups and $p$ is the number of 
   p_val = pchisq(deviance, df, lower.tail = FALSE)
   p_val
 ```
-From the output we see that $\hat{\phi}$ is larger than 1. We know the deviance is chisquared distributed and we have $G-p = 110$ degrees of freedom. When doing a p-test of the deviance we get that this is significant, thus we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and positive correlation between independent binary observations of the response variable. In this case, the data could be correlated e.g because of similar weather conditions. If the weather is nice in an area it would be easier reaching the summit of several mountains. Also, within a group the expeditions can be correlated because expeditions which are done when the weather is nice will be easier than the attempts when the weather is bad.
-Another reason for correlation could be different physical conditions for the people on the different excursion.??
-Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
+From the output we see that $\hat{\phi}$ is larger than 1. We know the deviance is chisquared distributed and we have $G-p = 110$ degrees of freedom. When doing a p-test of the deviance we get that this is significant, thus we have overdispersion. Reasons for overdispersion can be unobserved heterogeneity and correlation between independent binary observations of the response variable. In this case, the data could be correlated e.g because of similar weather conditions. It would be easier for the expeditions to reach the summit if the weather is nice. The different expeditions within a group could also be correlated because of each other. If it is several expeditions attempting to reach the same mountain simultaneous it may affect each expeditions probability to reach the summit. It could be more difficult to reach the summit, but the expeditions could also help each other to reach the summit. 
 
-ulike ekspidisjoner kommer i veien fir hverandre
-innad i en gruppe
-DEN KORRELASJONEN HER MÅ VI SPØRRE om !! Usikker på om de mener korrelasjon mellom ekspedisjoner på ulike fjell, eller ekspedisjoner innad på et fjell. 
+Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
 
 ```{r, include=TRUE}
   mod2 <- glm(cbind(success,fail)~height+prominence, family=quasibinomial(link = "logit"))
