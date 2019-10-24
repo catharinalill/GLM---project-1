@@ -118,14 +118,24 @@ anova(mod2, mod_height, test = "F")
 anova(mod2, mod_prominence, test = "F")
 
 drop1(mod2, test = "F")  #We have a quasi-model so we need F-test, instead of LRT-test
-summary(mod2) 
-
 
 #Wald test
+summary(mod2) 
+```
+By use of F-test we see that when testing $H_0:$ model with only height as covariate is better than $H_1:$ the full model, we get a p-value that is greater than a significance level of e.g. 0.05. Thus we cannot reject $H_0$ and we cannot say that the model with only height as a covariate is any worse than the full model. This indicates that the covariate prominence does not tell us that much. 
 
+From the second F-test when testing $H_0:$ model with only prominence as covariate is better than $H_1:$ the full model, we get a p-value that is smaller than a significance level of 0.05. Thus we reject the null hypothesis that the model with only prominence is better than the full model. That is, height is an important covariate in this model and is thus significant. 
 
+In the Wald test, we want to test the significance of the regression coefficients and thus we have the hypothesis 
+$$
+  H_0: \beta_{i} = 0 \quad  \textrm{vs.} \quad  H_1: \beta_{i} \neq 0,
+$$
+where $i = \{ height, prominence\}$. The result of these test are shown in the output of the summary of the full model. For the covariate height the p-value is very small, so we reject the null hypothesis. Thus, the height is a significant covariate. For the prominence the p-value is right above 0.05. So, here one have to decide which significance level to use. If one uses 0.05, we cannot reject $H_0$ so prominence is not significant. But, if one uses a significance level that is a bit higher, we can reject the null hypothesis and then prominence is also a significant covariate. Either way this tells us that height is the most significant covariate in the model. 
 
+If we compare the wald-tests against the F-tests we see that the results are quite similar. There are some small differences in the test statistics tests due to using asymptotic distributions, but the conclusion of the tests are the same.
 
+<!---- 
+```{r, include=TRUE}
 
 #Wald test
 beta <- coef(mod2)
@@ -134,37 +144,37 @@ C <- rbind(c(0,1,0),
            c(0,0,1))
 
 #OBS!!! Her skal testing av beta_0, tas vekk, skal kun ha to linjer. Må da ta vekk en kolonne og en rad i design matrix også!!!
-wald <- t(C %*% beta - d) %*% solve(C %*% vcov(mod2) %*% t(C)) %*% (C %*% beta - d)
-wald
-pchisq(wald, df=2, lower.tail=FALSE)
-t-test vs 
-LRT, tilpasse to modeller, H0 uten og H1 med kovariaten og sammenligner likelihood
-Wald, Z = beta/SE(beta), std normal eller med overdispersjon, T = beta/SEbeta estimator 
+#wald <- t(C %*% beta - d) %*% solve(C %*% vcov(mod2) %*% t(C)) %*% (C %*% beta - d)
+#wald
+#pchisq(wald, df=2, lower.tail=FALSE)
+#t-test vs 
+#LRT, tilpasse to modeller, H0 uten og H1 med kovariaten og sammenligner likelihood
+#Wald, Z = beta/SE(beta), std normal eller med overdispersjon, T = beta/SEbeta estimator 
 
-LRT uten overdispersjon, 2(l(beta0)-l(beta1))
-LRT med overdisp, F = (D0-D1)/(p1-po)/D1/(n-p1)
-anova(mod0,mod1, test = "F")
+#LRT uten overdispersjon, 2(l(beta0)-l(beta1))
+#LRT med overdisp, F = (D0-D1)/(p1-po)/D1/(n-p1)
+#anova(mod0,mod1, test = "F")
 #ER DET TO FRIHETSGRADER HER, eller må vi ta hensyn til phi også som en parameter?? skal ikke tas hensyn til her
 ```
-By use of F-test we see that when testing $H_0:$ model with only height as covariate is better than $H_1:$ the full model, we get a p-value that is greater than a significance level of e.g. 0.05. Thus we cannot reject $H_0$ and we cannot say that the model with only height as a covariate is any worse than the full model. 
-
-From the second F-test when testing $H_0:$ model with only prominence as covariate is better than $H_1:$ the full model, we get a p-value that is smaller than a significance level of 0.05. Thus we reject the null hypothesis that the model with only prominence is better than the full model. 
-
-These two test tells us that 
-
 each term in the model is significant. By comparing with the summary from the fitted model we see that both covariates are a bit less significant in the summary output. 
 SPØR OM DET ER NOE MER SOM SKAL KOMMENTERES HER??
 
 HVA MED Å SKRIVE NOE MER SOM DET ØVERSTE HER I STEDET FOR DET UNDER? OG ER DET RIKTIG SÅNN DRT STÅR NÅ?
-In the Wald test, when we want to test the significance of the regression coefficients we have the linear null hypothesis $H_0: \beta_{height} = \beta_{prominence} = 0$, which can be written as $C\beta = d$. So, in the construction of the $C$-matrix we have a $2\times3$-matrix. From the result we can see that the p-value is much less than any reasonable significance level, say e.g 0.05. Hence, we reject the null hypothesis that the coefficient estimates are zero. Thus the coefficients are significant. 
+We then get a test-statistic
+$$
+  T = 
+$$
+
+From the result we can see that the p-value is much less than any reasonable significance level, say e.g 0.05. Hence, we reject the null hypothesis that the coefficient estimates are zero. Thus the coefficients are significant. 
 
 By use of the Wald test we see that the p-value is much less than any reasonable significance level, say e.g 0.05. Hence, we reject the null hypothesis that the coefficient estimates are zero. Thus the coefficients are significant. 
 
 SKAL DET GJØRES WALD TEST FOR HVER KOEFFESIENT FOR SEG SELV HER??? SPØR JARLE
 HVA ER EGT FORSKJELLEN PÅ DE TESTENE HER? HVA SLAGS NULL HYPOTESER HAR VI I DE ULIKE TILFELLENE??
 Skal gjøres for hver kovariat
+----> 
 
-Our choice of link function was the logit model. To interpret the estimated regression coefficients we look at the odds, 
+Further we give interpretations of the estimated regression slope parameters. Our choice of link function was the logit model. To interpret the estimated regression coefficients we look at the odds, 
 $$
   \frac{\pi_i}{1-\pi_i} = \frac{P(y_i=1 | x_i)}{P(y_i=0 | x_i)} = \exp(\beta_0)\cdot \exp(x_{i1}\beta_1)\cdot \ldots \cdot \exp(x_{ik}\beta_k) = \exp(\eta_i). 
 $$
