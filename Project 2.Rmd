@@ -113,11 +113,36 @@ anova(mod2, mod_height, test = "F")
 #F-test for covariate prominence
 anova(mod2, mod_prominence, test = "F")
 
+#F-tests by hand 
+
+
+
+#F-test
 drop1(mod2, test = "F")  #We have a quasi-model so we need F-test, instead of LRT-test
+
+#Wald test by hand 
+beta = mod2$coefficients[1:3]
+se_beta = summary(mod2)$coefficients[,2]
+wald <- beta/se_beta  #Calculate 3 Wald statistics for beta_0, beta_height og beta_prominence
+wald
+
+p <- 3
+df <- n-p   #n?????
+p_val <- pf(wald, df,df,df, lower.tail = FALSE)
+p_val
 
 #Wald test
 summary(mod2) 
+
+
 ```
+
+In the F-test we have nested models $H_0$ and $H_1$. Under $H_0$, we then have thes test statistic
+$$
+  \frac{(D_0-D_1)/(p_1-p_0)}{D_1/(n-p_1)} \sim F_{p_1-p_0,n-p_1}.
+$$
+where $D_i$ is the deviance for the model under $H_i$, and $p_i$ is the number of estimated regression coefficients for the model under $H_i$. So, here $p_1$ = 3, and $p_0$ = 2. 
+ 
 By use of F-test we see that when testing $H_0:$ model with only height as covariate is better than $H_1:$ the full model, we get a p-value that is greater than a significance level of e.g. 0.05. Thus we cannot reject $H_0$ and we cannot say that the model with only height as a covariate is any worse than the full model. This indicates that the covariate prominence does not tell us that much. 
 
 From the second F-test when testing $H_0:$ model with only prominence as covariate is better than $H_1:$ the full model, we get a p-value that is smaller than a significance level of 0.05. Thus we reject the null hypothesis that the model with only prominence is better than the full model. That is, height is an important covariate in this model and is thus significant. 
@@ -126,7 +151,7 @@ In the Wald test, we want to test the significance of the regression coefficient
 $$
   H_0: \beta_{i} = 0 \quad  \textrm{vs.} \quad  H_1: \beta_{i} \neq 0,
 $$
-where $i = \{ height, prominence\}$. The result of these test are shown in the output of the summary of the full model. For the covariate height the p-value is very small, so we reject the null hypothesis. Thus, the height is a significant covariate. For the prominence the p-value is right above 0.05. So, here one have to decide which significance level to use. If one uses 0.05, we cannot reject $H_0$ so prominence is not significant. But, if one uses a significance level that is a bit higher, we can reject the null hypothesis and then prominence is also a significant covariate. Either way this tells us that height is the most significant covariate in the model. 
+where $i = \{0, height, prominence\}$. The result of these test are shown in the output of the summary of the full model. For the covariate height the p-value is very small, so we reject the null hypothesis. Thus, the height is a significant covariate. For the prominence the p-value is right above 0.05. So, here one have to decide which significance level to use. If one uses 0.05, we cannot reject $H_0$ so prominence is not significant. But, if one uses a significance level that is a bit higher, we can reject the null hypothesis and then prominence is also a significant covariate. Either way this tells us that height is the most significant covariate in the model. 
 
 If we compare the wald-tests against the F-tests we see that the results are quite similar. There are some small differences in the test statistics tests due to using asymptotic distributions, but the conclusion of the tests are the same.
 
@@ -267,7 +292,6 @@ upper_1 = pred_1 + qnorm(1-alpha/2) * se_1
 ci_1 = c(lower_1, upper_1)  #95% confidence interval for the predicted value 
 probci = plogis(ci_1)       #Transform the confindence interval to probability 
 probci  
-  
 ```
 
 Mount Everest is the only mountain in our data set that have the same height and prominence. The higher the prominence the lower the probability of success. So, in this case since Mount Everest has such a high prominence, the predicted probability of success will be low. Also, here the prominence of Mount Everest does not tell us that much, because success of reaching the summit depend on where you start, and in this case the first basecamp of Mount Everst is about 5000 meters over sea level. For the other data, i.e. the other mountains, the prominence tells us more about how many meters you have to hike, and therefore gives a better interpretation of the difficulty of reaching the summit and thus the probability of success. This might lead to that the model does not fit the datapoint $x_{new}$ for Mount Everest well. Thus, we might get a predicted value and an interval that is not that reasonable. 
