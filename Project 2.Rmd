@@ -59,6 +59,8 @@ From the output we see that $\hat{\phi}$ is larger than 1. We know the deviance 
 Another reason for correlation could be different physical conditions for the people on the different excursion.??
 Because we have overdispersion we want to refit the model using a quasi-likelihood model. 
 
+ulike ekspidisjoner kommer i veien fir hverandre
+innad i en gruppe
 DEN KORRELASJONEN HER MÅ VI SPØRRE om !! Usikker på om de mener korrelasjon mellom ekspedisjoner på ulike fjell, eller ekspedisjoner innad på et fjell. 
 
 ```{r, include=TRUE}
@@ -103,10 +105,27 @@ where $l(\hat{\theta})$ is the likelihood function evaluated at the estimated re
 By looking at the computed QAICs we see that the model with both covariates has the lowest value. Hence, we choose the full model. 
 
 ##d)
-Now we want to test the significance of each term in the model using both Wald test and likelihood ratio test. 
+Now we want to test the significance of each term in the model using both Wald test and likelihood ratio test. Since we have overdispersion and use a quasibinomial model, the likelihood ratio test becomes a F-test. 
 ```{r, include=TRUE}
-drop1(mod2, test = "LRT")  
-summary(mod2)
+#Testing significance of each of the covariates
+#Fit models with only height and prominence as covariates
+mod_height <- glm(cbind(success,fail)~height, family=quasibinomial(link = "logit"))
+mod_prominence <- glm(cbind(success,fail)~prominence, family=quasibinomial(link = "logit"))
+
+#F-test for covariate height
+anova(mod2, mod_height, test = "F")
+#F-test for covariate prominence
+anova(mod2, mod_prominence, test = "F")
+
+drop1(mod2, test = "F")  #We have a quasi-model so we need F-test, instead of LRT-test
+summary(mod2) 
+
+
+#Wald test
+
+
+
+
 
 #Wald test
 beta <- coef(mod2)
@@ -118,9 +137,22 @@ C <- rbind(c(0,1,0),
 wald <- t(C %*% beta - d) %*% solve(C %*% vcov(mod2) %*% t(C)) %*% (C %*% beta - d)
 wald
 pchisq(wald, df=2, lower.tail=FALSE)
-#ER DET TO FRIHETSGRADER HER, eller må vi ta hensyn til phi også som en parameter??
+t-test vs 
+LRT, tilpasse to modeller, H0 uten og H1 med kovariaten og sammenligner likelihood
+Wald, Z = beta/SE(beta), std normal eller med overdispersjon, T = beta/SEbeta estimator 
+
+LRT uten overdispersjon, 2(l(beta0)-l(beta1))
+LRT med overdisp, F = (D0-D1)/(p1-po)/D1/(n-p1)
+anova(mod0,mod1, test = "F")
+#ER DET TO FRIHETSGRADER HER, eller må vi ta hensyn til phi også som en parameter?? skal ikke tas hensyn til her
 ```
-By use of likelihood ratio test we see that each term in the model is significant. By comparing with the summary from the fitted model we see that both covariates are a bit less significant in the summary output. 
+By use of F-test we see that when testing $H_0:$ model with only height as covariate is better than $H_1:$ the full model, we get a p-value that is greater than a significance level of e.g. 0.05. Thus we cannot reject $H_0$ and we cannot say that the model with only height as a covariate is any worse than the full model. 
+
+From the second F-test when testing $H_0:$ model with only prominence as covariate is better than $H_1:$ the full model, we get a p-value that is smaller than a significance level of 0.05. Thus we reject the null hypothesis that the model with only prominence is better than the full model. 
+
+These two test tells us that 
+
+each term in the model is significant. By comparing with the summary from the fitted model we see that both covariates are a bit less significant in the summary output. 
 SPØR OM DET ER NOE MER SOM SKAL KOMMENTERES HER??
 
 HVA MED Å SKRIVE NOE MER SOM DET ØVERSTE HER I STEDET FOR DET UNDER? OG ER DET RIKTIG SÅNN DRT STÅR NÅ?
@@ -130,6 +162,7 @@ By use of the Wald test we see that the p-value is much less than any reasonable
 
 SKAL DET GJØRES WALD TEST FOR HVER KOEFFESIENT FOR SEG SELV HER??? SPØR JARLE
 HVA ER EGT FORSKJELLEN PÅ DE TESTENE HER? HVA SLAGS NULL HYPOTESER HAR VI I DE ULIKE TILFELLENE??
+Skal gjøres for hver kovariat
 
 Our choice of link function was the logit model. To interpret the estimated regression coefficients we look at the odds, 
 $$
