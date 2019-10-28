@@ -2,9 +2,8 @@
 title: "TMA4315: Compulsory exercise 2" 
 subtitle: "Aurora Hofman, Camilla Karlsen, Catharina Lilleengen" 
 date: "`r format(Sys.time(), '%d.%m.%Y')`"
-output: html_document
+output: pdf_document
 ---
-
 
 # Problem 1
 
@@ -234,8 +233,8 @@ pred_value = plogis(pred)
 pred_value
 
 alpha=0.05
-sigma_matrix= vcov(mod2)                    #The estimated variance matrix of β
-se = sqrt(t(x_new)%*%sigma_matrix%*%x_new)  #Standard error of x^T*β
+sigma_matrix= vcov(mod2)                    #The estimated variance matrix of beta
+se = sqrt(t(x_new)%*%sigma_matrix%*%x_new)  #Standard error of x^T*beta
 
 lower = pred - qnorm(1-alpha/2) * se
 upper = pred + qnorm(1-alpha/2) * se
@@ -259,7 +258,7 @@ x_1 = c(1,8611,4017)
 pred_1 = predict(mod2,newdata=new_1) 
 pred_value1 = plogis(pred_1)
 pred_value1
-se_1 = sqrt(t(x_1)%*%sigma_matrix%*%x_1)  #Standard error of x^T*β
+se_1 = sqrt(t(x_1)%*%sigma_matrix%*%x_1)  #Standard error of x^T*beta
 
 lower_1 = pred_1 - qnorm(1-alpha/2) * se_1
 upper_1 = pred_1 + qnorm(1-alpha/2) * se_1
@@ -273,7 +272,7 @@ x_2 = c(1,8848,5000)
 pred_2 = predict(mod2,newdata=new_2) 
 pred_value2 = plogis(pred_2)
 pred_value2
-se_2 = sqrt(t(x_2)%*%sigma_matrix%*%x_2)  #Standard error of x^T*β
+se_2 = sqrt(t(x_2)%*%sigma_matrix%*%x_2)  #Standard error of x^T*beta
 
 lower_2 = pred_2 - qnorm(1-alpha/2) * se_2
 upper_2 = pred_2 + qnorm(1-alpha/2) * se_2
@@ -293,7 +292,8 @@ long <- read.csv("https://www.math.ntnu.no/emner/TMA4315/2019h/eliteserie.csv")
 ##a)
 We start by fitting a model with attack, defence and home as covariates, to the data.
 ```{r, include=TRUE}
-mod <- glm(goals ~ attack + defence + home, poisson(link= log), data=long ) #log natural choice of link funk
+#log natural choice of link funk
+mod <- glm(goals ~ attack + defence + home, poisson(link= log), data=long ) 
 summary(mod)
 ```
 
@@ -342,7 +342,9 @@ Since $\hat{\phi}$ is right above 1 we observe a tendency of overdispersion, but
 Now we want to make a function that gives us the teamrank based on the games played. 
 
 ```{r, include=TRUE}
-#Making the function that takes the above data.frame as input, computes the total number of points given to each team, and returns the ranking of each team. 
+#Making the function that takes the above data.frame as input, 
+#computes the total number of points given to each team, 
+#and returns the ranking of each team. 
 team_rank <- function(predict_data,n){
   teams = predict_data$attack[1:16]
   teams_char = as.character(teams)
@@ -408,12 +410,13 @@ n=480 #Number of matches per tippeliga
 
 #Construct empty rank_matrix to fill in the rank for each tippeliga simulated
 rank_matrix<- matrix(0,  16, 1000)
-#Construct an empty matrix to fill in the simulated results per game per tippeliga (480*1000) matrix
-poisson_matrix <-matrix(0,  n, 1000)
+#Construct an empty matrix to fill in the simulated results per game per tippeliga 
+poisson_matrix <-matrix(0,  n, 1000) #(480*1000) matrix
 
 set.seed(50)
 
-#Fill the poisson_matrix with simulations of number of goals scored per game, do this thousand times for each match
+#Fill the poisson_matrix with simulations of number of goals scored per game, 
+#do this thousand times for each match
 for (i in (1:n)){
   poisson_matrix[i,] <- rpois(1000, expected[[i]])
 }
@@ -438,7 +441,8 @@ for (i in (1:16)){
 teams<-long$attack[1:16]
 team_av_rank<-ex_fin_rank
 av_result <- data.frame("Team"=as.character(teams),"Expected rank"=team_av_rank)
-av_result_sorted <-av_result[order(av_result$Expected),] #order the dataframe by the expected rank 
+#order the dataframe by the expected rank 
+av_result_sorted <-av_result[order(av_result$Expected),] 
 av_result_sorted 
 ```
 From the output above we see that Rosenborg has the highest expected rank. 
@@ -463,9 +467,4 @@ pchisq(wald, df=15, lower.tail=FALSE)
  
 ```
 As one can see this gives a high p-value and we do not reject the null hypothesis for any reasonable significance level, say e.g. 0.05. Hence, the hypothesis of possibly doing a simplification of the model and assuming that the attack and defence strengths of each team are equal in absolute value but with opposite sign cannot be rejected. 
-
-
-
-
-
 
