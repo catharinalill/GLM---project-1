@@ -32,7 +32,7 @@ $$
 $$
 where $G = \tau^2I$ and $R = \sigma^2I$. 
    
-We now implement a function that computes the maximum likelihood and restricted maximum likelihood estimates of the parameters of the given mixed model. 
+We now implement a function called $\texttt{mylmm}$ that computes the maximum likelihood and restricted maximum likelihood estimates of the parameters in the given mixed model. 
    
 ```{r setup, include=TRUE}
 library(lme4)
@@ -115,7 +115,8 @@ mylmm(y,group, REML=TRUE)
 lmer(y ~ (1|group), REML=TRUE)
 
 ```
-The estimates from mylmm with maxmimum likelihood are $\hat\beta=10,43$, $\hat\sigma=1,171$ and $\hat\tau=1,307$. When comparing to the computades values by lmer $\hat\beta=10,43$, $\hat\sigma=1,171$ and $\hat\tau=1,306$ we see that the estimates are almost the same. 
-The estimates from mylmm with restricted maximum likelihood are $\hat\beta=10,43$, $\hat\sigma=1,171$ and $\hat\tau=1,391$. When comparing to the computades values by lmer $\hat\beta=10,43$, $\hat\sigma=1,171$ and $\hat\tau=1,391$ we see that these are also almost the same. 
+The maxmimum likelihood estimates from $\texttt{mylmm}$ are $\hat\beta=10,43$, $\hat\sigma=1,171$ and $\hat\tau=1,307$. When comparing with the computed values by lmer which are $\hat\beta=10,43$, $\hat\sigma=1,171$ and $\hat\tau=1,306$, we see that the estimates are almost the same. 
+   
+The restricted maximum likelihood estimates from $\texttt{mylmm}$ are $\hat\beta=10,43$, $\hat\sigma=1,171$ and $\hat\tau=1,391$. When comparing to the computed values by lmer $\hat\beta=10,43$, $\hat\sigma=1,171$ and $\hat\tau=1,391$ we see that these are also almost the same. 
 
 #Problem 2
