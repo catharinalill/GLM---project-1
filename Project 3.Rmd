@@ -1,0 +1,20 @@
+---
+title: "Project 3"
+author: "Aurora Hofman, Camilla Karlsen, Catharina Lilleengen"
+date: "`r format(Sys.time(), '%d.%m.%Y')`"
+output: html_document
+---
+
+#Problem 1 
+
+##Teori
+
+##Kode
+
+```{r setup, include=TRUE}
+ data <- read.csv("https://www.math.ntnu.no/emner/TMA4315/2019h/random-intercept.csv",
+  colClasses=c("numeric","factor"))
+ attach(data)
+```
+
+#Problem 2
