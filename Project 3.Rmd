@@ -115,6 +115,7 @@ mylmm(y,group, REML=TRUE)
 lmer(y ~ (1|group), REML=TRUE)
 
 ```
-
+The estimates from mylmm with maxmimum likelihood are $\beta=10,43$, $\sigma=1,171$ and $\tau=1,307$. When comparing to the computades values by lmer $\beta=10,43$, $\sigma=1,171$ and $\tau=1,306$ we see that the estimates are almost the same. 
+The estimates from mylmm with restricted maximum likelihood are $\beta=10,43$, $\sigma=1,171$ and $\tau=1,391$. When comparing to the computades values by lmer $\beta=10,43$, $\sigma=1,171$ and $\tau=1,391$ we see that these are also almost the same. 
 
 #Problem 2
