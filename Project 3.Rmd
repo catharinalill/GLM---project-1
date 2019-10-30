@@ -61,17 +61,12 @@ V <- function(theta){
 }
 l_p <- function(theta){
   beta_est=beta(theta)
-  print(V(theta))
-  print("DETERMINANT:")
-  print(determinant(V(theta)))
-  l_p = -1/2*(log(determinant(V(theta)))+(t(y-X%*%beta_est)%*%solve(V(theta))%*%(y-X%*%beta_est)))
-  print("LP:")
-  print(l_p)
+  l_p = -1/2*(log(det(V(theta)))+(t(y-X%*%beta_est)%*%solve(V(theta))%*%(y-X%*%beta_est)))
   return(l_p)
 }
 
 l_r <- function(theta){
-  l_r = l_p(theta)-1/2*log(determinant(t(X)%*%solve(V)%*%X))
+  l_r = l_p(theta)-1/2*log(det(t(X)%*%solve(V(theta))%*%X))
   return(l_r)
 }
 ```
@@ -81,38 +76,34 @@ l_r <- function(theta){
   n<-length(y)/m # 4 number of measurements within each cluster
   U <- model.matrix(~0 + group)
   X <- matrix(1,m*n)
-  print(typeof(y))
-  print(dim(y))
 
 mylmm <- function(y, group,REML = FALSE){ #i grupper #j obs i hver gruppe
   estimates=rep(0,3) #beta, sigma, tau
   theta <- rep(1,2) #sigma, tau
   
-  l_p(theta)
-  
   if (REML == FALSE) {
     obj = optim(par = theta,fn = l_p,control = list(fnscale=-1))
   }
   else {
-    obj = optim(par = theta,fn = l_r(theta),control = list(fnscale=-1))
+    obj = optim(par = theta,fn = l_r,control = list(fnscale=-1))
   }
   
   obj
   theta = obj$par
   beta = beta(theta)
   estimates[1] = beta
-  estimates[2] = theta[1]
-  estimates[3] = theta[2]
+  estimates[2] = sqrt(theta[1])
+  estimates[3] = sqrt(theta[2])
   return(estimates)
 }
 
-print(mylmm(y,group))
+#print(mylmm(y,group))
 
-#mylmm(y,group, TRUE)
+print(mylmm(y,group, REML=TRUE))
 
 #Check the estimates
 #lmer(y ~ (1|group), REML=FALSE) 
-#lmer(y ~ (1|group), REML=TRUE)
+lmer(y ~ (1|group), REML=TRUE)
 
 ```
 
