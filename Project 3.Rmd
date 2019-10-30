@@ -12,27 +12,24 @@ We are given the mixed model
 $$
   y_{ij} = \beta_0 + \gamma_i + \epsilon_{ij}, 
 $$
-where $\gamma_i$ are iid N$(0,\tau^2)$ and $\epsilon_{ij}$ are  iid N$(0,\sigma^2)$ for $i = 1,\ldots,m,  j = 1,\ldots n$. For each group $i = 1,\ldots,m$ we have 
+where $\gamma_i$ are iid $\mathcal{N}(0,\tau^2)$ and $\epsilon_{ij}$ are  iid $\mathcal{N}(0,\sigma^2)$ for $i = 1,\ldots,m,  j = 1,\ldots n$. This means we have the same number of observations for each group. We can also write the model as
 $$
-   y_{ij} = \boldsymbol{x}_{ij}^T\boldsymbol{\beta} + \boldsymbol{u}_{ij}\boldsymbol{\gamma}_i + \epsilon_{ij}. 
+   y_{ij} = \boldsymbol{x}_{ij}^T\boldsymbol{\beta} + \boldsymbol{u}_{ij}\boldsymbol{\gamma}_i + \epsilon_{ij},  
 $$
-To express the model in matrix notation we can write
+where in this case $\boldsymbol{x}_{ij}^T = 1$ and $\boldsymbol{u}_{ij}^T = 1$. For each group $i = 1,\ldots,m$ we have
 $$
-  \boldsymbol{y_i} = \boldsymbol{X_i}\boldsymbol{\beta} + \boldsymbol{U_i}\boldsymbol{\gamma_i} + \boldsymbol{\epsilon_i}, 
+  \boldsymbol{y_i} = \boldsymbol{X_i}\boldsymbol{\beta} + \boldsymbol{U_i}\boldsymbol{\gamma_i} + \boldsymbol{\epsilon_i}.  
 $$
-so the model can be expressed as 
+Here $\boldsymbol{y_i}$ is a n-dimensional vector of response values for group $i$, $X_i$ are a $(n\times p)$-dimensional design matrix, and $p=1$ since we only have intercept in the model. Hence, $\boldsymbol{X_i}$ is a $(n\times 1)$-dimensional vector with only ones, since we do not have any covariates. $\boldsymbol{U_i}$ in this case is also a $(n\times 1)$-dimensional design matrix with only ones. The p-dimensional vector of fixed effects $\boldsymbol{\beta} = \beta_0$ in this case, and since we only have a random intercept model the vector of group-specific effects $\boldsymbol{\gamma_i}$ has dimension $1/times 1$. Moreover $\boldsymbol{\epsilon_i}$ is a n-dimensional vector of errors. The model can be expressed in matrix notation as,
 $$
   \boldsymbol{Y} = \boldsymbol{X}\boldsymbol{\beta} + \boldsymbol{U}\boldsymbol{\gamma} + \boldsymbol{\epsilon}.
 $$
-Here $\boldsymbol{Y} = [y_1 \ldots y_m]^T$, $\boldsymbol{X} = [x_1^T \ldots x_m^T]^T$, $\boldsymbol{\gamma} = [\gamma_1 \ldots \gamma_m]^T$, $ \boldsymbol{\epsilon}= [\epsilon_1^T \ldots \epsilon_m^T]^T$ and $\boldsymbol{U} = blockdiag(U_1, \ldots , U_m)$ where $U_i$ is a $(n\times 1)$-dimensional vector with ones. 
+Here $\boldsymbol{Y} = [y_1 \ldots y_m]^T$, $\boldsymbol{X} = [x_1^T \ldots x_m^T]^T$, $\boldsymbol{\gamma} = [\gamma_1 \ldots \gamma_m]^T$, $\boldsymbol{\epsilon}= [\epsilon_1^T \ldots \epsilon_m^T]^T$ and $\boldsymbol{U} = blockdiag(U_1, \ldots , U_m)$ where $U_i$ is a $(n\times 1)$-dimensional vector with ones. 
 Here $\boldsymbol{X}$ and $\boldsymbol{U}$ are design matrices, $\boldsymbol{\beta}$ is the vector for fixed effects and $\boldsymbol{\gamma}$ the vector of random effects. In this case, 
 $$
   \boldsymbol{\gamma} \sim N(0,G) \quad \textrm{and} \quad \boldsymbol{\epsilon} \sim N(0,R),  
 $$
 where $G = \tau^2I$ and $R = \sigma^2I$. 
-
-Where in this case $\boldsymbol{x}_{ij}^T = 1$ and $\boldsymbol{u}_{ij}^T = 1$.
-TEORIEN MÅ SKRIVE OM LITT ETTER VI HAR FUNNET UT AV VÅRT TILFELLE...
    
 ##Kode
 
