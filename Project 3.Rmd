@@ -7,7 +7,6 @@ output: html_document
 
 #Problem 1 
 
-##Teori
 We are given the mixed model 
 $$
   y_{ij} = \beta_0 + \gamma_i + \epsilon_{ij}, 
@@ -20,19 +19,21 @@ where in this case $\boldsymbol{x}_{ij}^T = 1$ and $\boldsymbol{u}_{ij}^T = 1$. 
 $$
   \boldsymbol{y_i} = \boldsymbol{X_i}\boldsymbol{\beta} + \boldsymbol{U_i}\boldsymbol{\gamma_i} + \boldsymbol{\epsilon_i}.  
 $$
-Here $\boldsymbol{y_i}$ is a n-dimensional vector of response values for group $i$, $X_i$ are a $(n\times p)$-dimensional design matrix, and $p=1$ since we only have intercept in the model. Hence, $\boldsymbol{X_i}$ is a $(n\times 1)$-dimensional vector with only ones, since we do not have any covariates. $\boldsymbol{U_i}$ in this case is also a $(n\times 1)$-dimensional design matrix with only ones. The p-dimensional vector of fixed effects $\boldsymbol{\beta} = \beta_0$ in this case, and since we only have a random intercept model the vector of group-specific effects $\boldsymbol{\gamma_i}$ has dimension $1/times 1$. Moreover $\boldsymbol{\epsilon_i}$ is a n-dimensional vector of errors. The model can be expressed in matrix notation as,
+Here $\boldsymbol{y_i}$ is a n-dimensional vector of response values for group $i$, $\boldsymbol{X_i}$ is a $(n\times p)$-dimensional design matrix, and $p=1$ since we only have intercept in the model. Hence, $\boldsymbol{X_i}$ is a $(n\times 1)$-dimensional vector with only ones. $\boldsymbol{U_i}$ in this case is also a $(n\times 1)$-dimensional design matrix with only ones. The p-dimensional vector of fixed effects $\boldsymbol{\beta} = \beta_0$ in this case, and since we only have a random intercept model the vector of group-specific effects $\boldsymbol{\gamma_i}$ has dimension $(1 \times 1)$. Moreover $\boldsymbol{\epsilon_i}$ is a n-dimensional vector of errors. 
+   
+The model can be expressed in matrix notation as,
 $$
   \boldsymbol{Y} = \boldsymbol{X}\boldsymbol{\beta} + \boldsymbol{U}\boldsymbol{\gamma} + \boldsymbol{\epsilon}.
 $$
-Here $\boldsymbol{Y} = [y_1 \ldots y_m]^T$, $\boldsymbol{X} = [x_1^T \ldots x_m^T]^T$, $\boldsymbol{\gamma} = [\gamma_1 \ldots \gamma_m]^T$, $\boldsymbol{\epsilon}= [\epsilon_1^T \ldots \epsilon_m^T]^T$ and $\boldsymbol{U} = blockdiag(U_1, \ldots , U_m)$ where $U_i$ is a $(n\times 1)$-dimensional vector with ones. 
-Here $\boldsymbol{X}$ and $\boldsymbol{U}$ are design matrices, $\boldsymbol{\beta}$ is the vector for fixed effects and $\boldsymbol{\gamma}$ the vector of random effects. In this case, 
+Here $\boldsymbol{Y} = [y_1 \ldots y_m]^T$, $\boldsymbol{X} = [x_1^T \ldots  x_m^T]^T$, $\boldsymbol{\gamma} = [\gamma_1 \ldots \gamma_m]^T$, $\boldsymbol{\epsilon}= [\epsilon_1^T \ldots \epsilon_m^T]^T$ and $\boldsymbol{U} = blockdiag(U_1, \ldots , U_m)$.
+Here $\boldsymbol{X}$ and $\boldsymbol{U}$ are design matrices, $\boldsymbol{\beta}$ is the vector for fixed effects and $\boldsymbol{\gamma}$ the vector of random effects. In this case since $\gamma_i$ and $\epsilon_{ij}$ are independent and they also are mutually independent we have 
 $$
   \boldsymbol{\gamma} \sim N(0,G) \quad \textrm{and} \quad \boldsymbol{\epsilon} \sim N(0,R),  
 $$
 where $G = \tau^2I$ and $R = \sigma^2I$. 
    
-##Kode
-
+We now implement a function that computes the maximum likelihood and restricted maximum likelihood estimates of the parameters of the given mixed model. 
+   
 ```{r setup, include=TRUE}
 library(lme4)
 data <- read.csv("https://www.math.ntnu.no/emner/TMA4315/2019h/random-intercept.csv",
