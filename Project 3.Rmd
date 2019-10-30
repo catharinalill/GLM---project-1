@@ -45,4 +45,53 @@ lmer(y ~ (1|group), REML = TRUE)
 
 ```
 
+```{r , include=TRUE}
+library(lme4)
+
+beta <- function(V,theta){
+  beta=solve(T(X)*solve(V(theta))*X)*T(X)*solve(V(theta))*y
+  return(beta)
+}
+
+V <- function(theta){
+  V = R(theta) + U*G(theta)*T(U)
+  return(V)
+}
+l_p <- function(theta){
+  beta_est=beta(theta)
+  l_p = -1/2*(log(abs(V(theta)))+(T(y-X*beta_est)*solve(V(theta))*(y-X*beta_est)))
+  return(l_p)
+}
+
+l_r <- function(theta){
+  l_r = l_p(theta)-1/2*log(determinant(T(X)*solve(V)*X))
+  return(l_r)
+}
+```
+
+```{r , include=TRUE}
+mylmm <- function(y, group,REML=FALSE){ #i grupper #j obs i hver gruppe
+  estimates=rep(0,3) #beta, sigma, tau
+  m<-nlevels(group) #10 # number of clusters/individuals
+  n<-length(y)/m # 4 number of measurements within each cluster
+  U <- model.matrix(~0 + group)
+  X <- matrix(1,m*n)
+  
+  
+  #if REML=TRUE: 
+  return(estimates)
+}
+
+mod <- lmer(y ~ (1|group), REML=TRUE)
+summary(mod)
+?optim
+
+
+#Check the estimates
+lmer(y ~ (1|group), REML=FALSE) 
+lmer(y ~ (1|group), REML=TRUE)
+
+```
+
+
 #Problem 2
