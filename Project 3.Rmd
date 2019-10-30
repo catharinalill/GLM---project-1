@@ -37,34 +37,39 @@ TEORIEN MÅ SKRIVE OM LITT ETTER VI HAR FUNNET UT AV VÅRT TILFELLE...
 ##Kode
 
 ```{r setup, include=TRUE}
+library(lme4)
 data <- read.csv("https://www.math.ntnu.no/emner/TMA4315/2019h/random-intercept.csv",
   colClasses=c("numeric","factor"))
 attach(data)
-library(lme4)
-lmer(y ~ (1|group), REML = TRUE)
+
 
 ```
 
 ```{r , include=TRUE}
-library(lme4)
 
-beta <- function(theta){
-  beta=solve(t(X)%*%solve(V(theta))%*%X)%*%t(X)%*%solve(V(theta))%*%y
+#Defining functions for beta(V), V(theta), l_p(theta), l_r(theta)
+
+beta <- function(V){
+  beta=solve(t(X)%*%solve(V)%*%X)%*%t(X)%*%solve(V)%*%y
   return(beta)
 }
 
+#Covariance matrix
 V <- function(theta){
   R <- theta[1]*diag(n*m)
   G <- theta[2]*diag(m)
   V = R + U%*%G%*%t(U)
   return(V)
 }
+
+#profile log-likelihood
 l_p <- function(theta){
-  beta_est=beta(theta)
-  l_p = -1/2*(log(det(V(theta)))+(t(y-X%*%beta_est)%*%solve(V(theta))%*%(y-X%*%beta_est)))
+  V = V(theta)
+  beta_est=beta(V)
+  l_p = -1/2*(log(det(V))+(t(y-X%*%beta_est)%*%solve(V)%*%(y-X%*%beta_est)))
   return(l_p)
 }
-
+#restricted log-likelihood
 l_r <- function(theta){
   l_r = l_p(theta)-1/2*log(det(t(X)%*%solve(V(theta))%*%X))
   return(l_r)
@@ -72,15 +77,19 @@ l_r <- function(theta){
 ```
 
 ```{r , include=TRUE}
-  m<-nlevels(group) #10 # number of clusters/individuals
-  n<-length(y)/m # 4 number of measurements within each cluster
+
+#Define constands and design matrices X and U
+  m<-nlevels(group)  # number of clusters/individuals
+  n<-length(y)/m # number of measurements within each cluster
   U <- model.matrix(~0 + group)
   X <- matrix(1,m*n)
 
-mylmm <- function(y, group,REML = FALSE){ #i grupper #j obs i hver gruppe
+#Define mylmm
+mylmm <- function(y, group,REML = FALSE){ 
   estimates=rep(0,3) #beta, sigma, tau
   theta <- rep(1,2) #sigma, tau
   
+  #find theta trough numerical maximisation
   if (REML == FALSE) {
     obj = optim(par = theta,fn = l_p,control = list(fnscale=-1))
   }
@@ -88,21 +97,23 @@ mylmm <- function(y, group,REML = FALSE){ #i grupper #j obs i hver gruppe
     obj = optim(par = theta,fn = l_r,control = list(fnscale=-1))
   }
   
-  obj
+  #Extract estimated theta
   theta = obj$par
-  beta = beta(theta)
+  #Estimated beta 
+  beta = beta(V(theta))
+  
   estimates[1] = beta
   estimates[2] = sqrt(theta[1])
   estimates[3] = sqrt(theta[2])
   return(estimates)
 }
 
-#print(mylmm(y,group))
+#Check the estimates against computed values by lmer fitted with maximum likelihood 
+mylmm(y,group, REML = FALSE)
+lmer(y ~ (1|group), REML=FALSE) 
 
-print(mylmm(y,group, REML=TRUE))
-
-#Check the estimates
-#lmer(y ~ (1|group), REML=FALSE) 
+#Check the estimates against computed values by lmer fitted with restricted maximum likelihood
+mylmm(y,group, REML=TRUE)
 lmer(y ~ (1|group), REML=TRUE)
 
 ```
