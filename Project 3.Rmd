@@ -24,7 +24,7 @@ so the model can be expressed as
 $$
   \boldsymbol{Y} = \boldsymbol{X}\boldsymbol{\beta} + \boldsymbol{U}\boldsymbol{\gamma} + \boldsymbol{\epsilon}.
 $$
-Here $\boldsymbol{Y} = [y_1 \ldots y_m]^T$, $\boldsymbol{X} = [x_1^T \ldots x_m^T]^T$, $\boldsymbol{\gamma} = [\gamma_1 \ldots \gamma_m]^T$, $ \boldsymbol{\epsilon}= [\epsilon_1^T \ldots \epsilon_m^T]^T$ and $\boldsymbol{U} = blockdiag(U_1, \ldots , U_m)$ where $U_i$ is a $(4\times 1)$-dimensional vector with ones. 
+Here $\boldsymbol{Y} = [y_1 \ldots y_m]^T$, $\boldsymbol{X} = [x_1^T \ldots x_m^T]^T$, $\boldsymbol{\gamma} = [\gamma_1 \ldots \gamma_m]^T$, $ \boldsymbol{\epsilon}= [\epsilon_1^T \ldots \epsilon_m^T]^T$ and $\boldsymbol{U} = blockdiag(U_1, \ldots , U_m)$ where $U_i$ is a $(n\times 1)$-dimensional vector with ones. 
 Here $\boldsymbol{X}$ and $\boldsymbol{U}$ are design matrices, $\boldsymbol{\beta}$ is the vector for fixed effects and $\boldsymbol{\gamma}$ the vector of random effects. In this case, 
 $$
   \boldsymbol{\gamma} \sim N(0,G) \quad \textrm{and} \quad \boldsymbol{\epsilon} \sim N(0,R),  
@@ -48,34 +48,44 @@ lmer(y ~ (1|group), REML = TRUE)
 ```{r , include=TRUE}
 library(lme4)
 
-beta <- function(V,theta){
-  beta=solve(T(X)*solve(V(theta))*X)*T(X)*solve(V(theta))*y
+beta <- function(theta,X){
+  beta=solve(t(X)*solve(V(theta))*X)*t(X)*solve(V(theta))*y
   return(beta)
 }
 
 V <- function(theta){
-  V = R(theta) + U*G(theta)*T(U)
+  R <- theta[1]*diag(n*m)
+  G <- theta[2]*diag(n*m)
+  V = R + U*G*t(U)
   return(V)
 }
-l_p <- function(theta){
-  beta_est=beta(theta)
-  l_p = -1/2*(log(abs(V(theta)))+(T(y-X*beta_est)*solve(V(theta))*(y-X*beta_est)))
+l_p <- function(theta,X){
+  beta_est=beta(theta,X)
+  l_p = -1/2*(log(abs(V(theta)))+(t(y-X*beta_est)*solve(V(theta))*(y-X*beta_est)))
   return(l_p)
 }
 
 l_r <- function(theta){
-  l_r = l_p(theta)-1/2*log(determinant(T(X)*solve(V)*X))
+  l_r = l_p(theta)-1/2*log(determinant(t(X)*solve(V)*X))
   return(l_r)
 }
 ```
 
 ```{r , include=TRUE}
-mylmm <- function(y, group,REML=FALSE){ #i grupper #j obs i hver gruppe
+mylmm <- function(y, group,REML = FALSE){ #i grupper #j obs i hver gruppe
   estimates=rep(0,3) #beta, sigma, tau
   m<-nlevels(group) #10 # number of clusters/individuals
   n<-length(y)/m # 4 number of measurements within each cluster
   U <- model.matrix(~0 + group)
   X <- matrix(1,m*n)
+  theta <- rep(0,2) #sigma, tau
+  
+  if (REML == FALSE) {
+    optim(c(0,0),theta,l_p(theta,X),control = list(fnscale=-1),data = data)
+  }
+  else {
+    optim(c(0,0),theta,l_r(theta,X),control = list(fnscale=-1),data = data)
+  }
   
   
   #if REML=TRUE: 
@@ -84,12 +94,13 @@ mylmm <- function(y, group,REML=FALSE){ #i grupper #j obs i hver gruppe
 
 mod <- lmer(y ~ (1|group), REML=TRUE)
 summary(mod)
-?optim
 
+mylmm(y,group)
+#mylmm(y,group, TRUE)
 
 #Check the estimates
-lmer(y ~ (1|group), REML=FALSE) 
-lmer(y ~ (1|group), REML=TRUE)
+#lmer(y ~ (1|group), REML=FALSE) 
+#lmer(y ~ (1|group), REML=TRUE)
 
 ```
 
