@@ -48,54 +48,66 @@ lmer(y ~ (1|group), REML = TRUE)
 ```{r , include=TRUE}
 library(lme4)
 
-beta <- function(theta,X){
-  beta=solve(t(X)*solve(V(theta))*X)*t(X)*solve(V(theta))*y
+beta <- function(theta){
+  beta=solve(t(X)%*%solve(V(theta))%*%X)%*%t(X)%*%solve(V(theta))%*%y
   return(beta)
 }
 
 V <- function(theta){
   R <- theta[1]*diag(n*m)
-  G <- theta[2]*diag(n*m)
-  V = R + U*G*t(U)
+  G <- theta[2]*diag(m)
+  V = R + U%*%G%*%t(U)
   return(V)
 }
-l_p <- function(theta,X){
-  beta_est=beta(theta,X)
-  l_p = -1/2*(log(abs(V(theta)))+(t(y-X*beta_est)*solve(V(theta))*(y-X*beta_est)))
+l_p <- function(theta){
+  beta_est=beta(theta)
+  print(V(theta))
+  print("DETERMINANT:")
+  print(determinant(V(theta)))
+  l_p = -1/2*(log(determinant(V(theta)))+(t(y-X%*%beta_est)%*%solve(V(theta))%*%(y-X%*%beta_est)))
+  print("LP:")
+  print(l_p)
   return(l_p)
 }
 
 l_r <- function(theta){
-  l_r = l_p(theta)-1/2*log(determinant(t(X)*solve(V)*X))
+  l_r = l_p(theta)-1/2*log(determinant(t(X)%*%solve(V)%*%X))
   return(l_r)
 }
 ```
 
 ```{r , include=TRUE}
-mylmm <- function(y, group,REML = FALSE){ #i grupper #j obs i hver gruppe
-  estimates=rep(0,3) #beta, sigma, tau
   m<-nlevels(group) #10 # number of clusters/individuals
   n<-length(y)/m # 4 number of measurements within each cluster
   U <- model.matrix(~0 + group)
   X <- matrix(1,m*n)
-  theta <- rep(0,2) #sigma, tau
+  print(typeof(y))
+  print(dim(y))
+
+mylmm <- function(y, group,REML = FALSE){ #i grupper #j obs i hver gruppe
+  estimates=rep(0,3) #beta, sigma, tau
+  theta <- rep(1,2) #sigma, tau
+  
+  l_p(theta)
   
   if (REML == FALSE) {
-    optim(c(0,0),theta,l_p(theta,X),control = list(fnscale=-1),data = data)
+    obj = optim(par = theta,fn = l_p,control = list(fnscale=-1))
   }
   else {
-    optim(c(0,0),theta,l_r(theta,X),control = list(fnscale=-1),data = data)
+    obj = optim(par = theta,fn = l_r(theta),control = list(fnscale=-1))
   }
   
-  
-  #if REML=TRUE: 
+  obj
+  theta = obj$par
+  beta = beta(theta)
+  estimates[1] = beta
+  estimates[2] = theta[1]
+  estimates[3] = theta[2]
   return(estimates)
 }
 
-mod <- lmer(y ~ (1|group), REML=TRUE)
-summary(mod)
+print(mylmm(y,group))
 
-mylmm(y,group)
 #mylmm(y,group, TRUE)
 
 #Check the estimates
