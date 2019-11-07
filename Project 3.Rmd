@@ -120,3 +120,55 @@ The maxmimum likelihood estimates from $\texttt{mylmm}$ are $\hat\beta=10,43$, $
 The restricted maximum likelihood estimates from $\texttt{mylmm}$ are $\hat\beta=10,43$, $\hat\sigma=1,171$ and $\hat\tau=1,391$. When comparing to the computed values by lmer $\hat\beta=10,43$, $\hat\sigma=1,171$ and $\hat\tau=1,391$ we see that these are also almost the same. 
 
 #Problem 2
+###a)
+
+```{r}
+library(lme4)
+data <-cbpp
+
+data
+```
+
+
+We will model tha data using a GLMM random intercept model with period as fixed effects and herd as a random effect on the intercept. We will use the logit choice of link function and we assume that the $incidence_{ij} = Y_{ij} is binomially distributed with parameter $size_{ij}$ and $\pi_{ij}(\beta, \gamma)$. In mathematical notation we get
+
+$$ Y_{ij} = x_{ij}^T\beta + \gamma_{0,i} + \epsilon_{ij},$$
+
+STEMMER DETTE?
+
+with $\gamma_{o,j}$ iid $\mathcal{N}(0,\tau_0^2)$ and $\epsilon_{ij}$ iid $\mathcal{N}(0,\sigma^2)$
+
+The random effect is added to the linear predictior giving, 
+
+$$ \eta_{ij} = x_{ij}^T + \gamma_{0,i}$$
+
+
+This model gives conditionally independent $Y_{ij}$s but they are not marginally indepentent.
+
+```{r}
+library(lme4)
+mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 25, data = cbpp)
+
+summary(mod)
+
+```
+Skjønner ikke resten av spørsmålet....
+
+```{r}
+mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
+
+summary(mod)
+```
+```{r}
+help(glmmTMB)
+```
+
+```{r}
+
+mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
+
+summary(mod_reml)
+```
+
+
+
