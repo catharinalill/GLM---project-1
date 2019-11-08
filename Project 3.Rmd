@@ -134,7 +134,7 @@ We will model tha data using a GLMM random intercept model with period as fixed 
 
 $$ Y_{ij} = x_{ij}^T\beta + \gamma_{0,i} + \epsilon_{ij},$$
 
-STEMMER DETTE?
+STEMMER DETTE? SKAL VI HA MED Y = ...
 
 with $\gamma_{o,j}$ iid $\mathcal{N}(0,\tau_0^2)$ and $\epsilon_{ij}$ iid $\mathcal{N}(0,\sigma^2)$
 
@@ -147,16 +147,22 @@ This model gives conditionally independent $Y_{ij}$s but they are not marginally
 
 ```{r}
 library(lme4)
-mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 25, data = cbpp)
 
+#BRUKER QUADTRATURE POINTS MÅ TESTE UT FOR HVILKEN nAGQ DEN STABILISERER SEG
+mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 1, data = cbpp)
+
+#burde stabilisere seg rundt 5/6
 summary(mod)
+print(fixef(mod), digits=15)
 
 ```
-Skjønner ikke resten av spørsmålet....
+
 
 ```{r}
+#fitter vha laplace
 mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
 
+#laplac er det samme som å sette nAGQ =1 det er også default setting i glmer vi kommer til å se litt endringer i estimater og tau
 summary(mod)
 ```
 ```{r}
@@ -164,7 +170,7 @@ help(glmmTMB)
 ```
 
 ```{r}
-
+#fitter med REML, skal gi mindre biassed varianse (tror både tau og sigma skal bli nærmere virkelig verdi)
 mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
 
 summary(mod_reml)
