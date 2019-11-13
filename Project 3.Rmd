@@ -144,6 +144,7 @@ $$ \eta_{ij} = x_{ij}^T + \gamma_{0,i}$$
 This model gives conditionally independent $Y_{ij}$s but they are not marginally independent.
 
 ###b)
+We now want to fit the model by computing the marginal likelihood using Gauss-Hermite quadrature. We investigate how many quadrature points we need to reliably compute the MLEs of $\beta$ to a numerical accuracy of 0. 
 ```{r}
 library(lme4)
 
@@ -162,9 +163,10 @@ print(fixef(mod), digits=15)
 #nAGQ = 6, intercept = -1.399211494824236
 #nAGQ = 7, intercept = -1.399235140053781
 ```
-
+By testing different number of quadrature points we see that five or six seems to be enough for the estimates of $\beta$ to stabilize. 
 
 ###c)
+Here we want to refit the model by maximising the Laplace approximation of the marginal likelihood. 
 ```{r}
 #Refitting model using Laplace
 mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
@@ -172,6 +174,7 @@ mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=b
 #laplace er det samme som å sette nAGQ =1. Det er også default setting i glmer, vi kommer til å se litt endringer i estimater og tau
 summary(mod)
 ```
+By looking at the summary of the refitted model we can see ....
 
 
 ```{r}
