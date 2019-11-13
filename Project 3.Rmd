@@ -195,16 +195,19 @@ mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=b
 #laplace er det samme som å sette nAGQ =1. Det er også default setting i glmer, vi kommer til å se litt endringer i estimater og tau
 summary(mod_laplace)
 ```
-By comparing the summaries of the two fitted model, we can see only slightly changes in some of the estimates. For example the estimate of $\tau$ is a bit lower for the model fitted by using 5 ???? quadratures points compared to the refitted model. 
+By comparing the summaries of the two fitted models, we can see only slightly changes in some of the estimates. For example the estimate of $\tau_0$ is a bit lower for the model fitted by using 5 ???? quadratures points compared to the refitted model. Also the estimates for $\beta$ are slightly changed. 
 
 ###d)
+We now refit the model by maximising the Laplace approximation of the REML likelihood. 
 ```{r}
-#fitter med REML, skal gi mindre biassed varianse (tror både tau og sigma skal bli nærmere virkelig verdi)
+#fitter med REML, skal gi mindre biased varianse (tror både tau og sigma skal bli nærmere virkelig verdi)
 library(glmmTMB)
 mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=TRUE)
 
 summary(mod_reml)
 ```
+As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. Why????
+
 ###e)
 
 ###f)
