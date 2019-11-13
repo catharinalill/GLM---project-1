@@ -125,12 +125,10 @@ The restricted maximum likelihood estimates from $\texttt{mylmm}$ are $\hat\beta
 ```{r}
 library(lme4)
 data <-cbpp
-
 data
 ```
 
-
-We will model tha data using a GLMM random intercept model with period as fixed effects and herd as a random effect on the intercept. We will use the logit choice of link function and we assume that the $incidence_{ij} = Y_{ij} is binomially distributed with parameter $size_{ij}$ and $\pi_{ij}(\beta, \gamma)$. In mathematical notation we get
+We will model tha data using a GLMM random intercept model with period as fixed effect and herd as a random effect on the intercept. We will use the logit choice of link function and we assume that the $incidence_{ij} = Y_{ij}$ is binomially distributed with parameter $size_{ij}$ and $\pi_{ij}(\beta, \gamma)$. In mathematical notation we get
 
 $$ Y_{ij} = x_{ij}^T\beta + \gamma_{0,i} + \epsilon_{ij},$$
 
@@ -143,38 +141,52 @@ The random effect is added to the linear predictior giving,
 $$ \eta_{ij} = x_{ij}^T + \gamma_{0,i}$$
 
 
-This model gives conditionally independent $Y_{ij}$s but they are not marginally indepentent.
+This model gives conditionally independent $Y_{ij}$s but they are not marginally independent.
 
+###b)
 ```{r}
 library(lme4)
 
 #BRUKER QUADTRATURE POINTS MÅ TESTE UT FOR HVILKEN nAGQ DEN STABILISERER SEG
-mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 1, data = cbpp)
+mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 7, data = cbpp)
 
 #burde stabilisere seg rundt 5/6
 summary(mod)
 print(fixef(mod), digits=15)
 
+#nAGQ = 1, intercept = -1.39834286446214
+#nAGQ = 2, intercept = -1.397945612319865
+#nAGQ = 3, intercept = -1.398037319121611
+#nAGQ = 4, intercept = -1.399265834284414
+#nAGQ = 5, intercept = -1.39920188258569
+#nAGQ = 6, intercept = -1.399211494824236
+#nAGQ = 7, intercept = -1.399235140053781
 ```
 
 
+###c)
 ```{r}
-#fitter vha laplace
+#Refitting model using Laplace
 mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
 
-#laplac er det samme som å sette nAGQ =1 det er også default setting i glmer vi kommer til å se litt endringer i estimater og tau
+#laplace er det samme som å sette nAGQ =1. Det er også default setting i glmer, vi kommer til å se litt endringer i estimater og tau
 summary(mod)
 ```
+
+
 ```{r}
 help(glmmTMB)
 ```
 
+###d)
 ```{r}
 #fitter med REML, skal gi mindre biassed varianse (tror både tau og sigma skal bli nærmere virkelig verdi)
-mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
+#mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
 
-summary(mod_reml)
+#summary(mod_reml)
 ```
+###e)
 
+###f)
 
-
+###g)
