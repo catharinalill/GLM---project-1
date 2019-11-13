@@ -129,18 +129,17 @@ data <-cbpp
 
 We will model tha data using a GLMM random intercept model with period as fixed effect and herd as a random effect on the intercept. We will use the logit choice of link function and we assume that the $incidence_{ij} = Y_{ij}$ is binomially distributed with parameter $size_{ij}$ and $\pi_{ij}(\beta, \gamma)$. In mathematical notation we get
 
-$$ Y_{ij} = x_{ij}^T\beta + \gamma_{0,i} + \epsilon_{ij},$$
-
-STEMMER DETTE? SKAL VI HA MED Y = ...
-
-with $\gamma_{o,j}$ iid $\mathcal{N}(0,\tau_0^2)$ and $\epsilon_{ij}$ iid $\mathcal{N}(0,\sigma^2)$.
+$$ 
+  Y_{ij} = x_{ij}^T\beta + \gamma_{0,i} + \epsilon_{ij},
+$$
+with $\gamma_{0,i}$ iid $\mathcal{N}(0,\tau_0^2)$ and $\epsilon_{ij}$ iid $\mathcal{N}(0,\sigma^2)$.
 
 The random effect is added to the linear predictior giving, 
 $$ 
   \eta_{ij} = x_{ij}^T + \gamma_{0,i}
 $$
 Tror vi må si noe om dette også, men vet ikke helt hvordan det blir..
-With the logit choice of link function $g(\pi_i)$ we have
+We have logit choice of link function $g(\pi_{ij})$  which is as given in problem 1. 
 $$
   g(\pi_i) = \log(\frac{\pi_i}{1-\pi_i})
 $$
@@ -184,7 +183,7 @@ plot(nAGQ, intercept, log = "y", type = "l", col = "blue", ylab = "error")
 
 ```
    
-By testing different number of quadrature points we see that five or six seems to be enough for the estimates of $\beta$ to stabilize.  ??? stabiliserer på 10??
+By testing different number of quadrature points we see that 10 seems to be enough for the estimates of $\beta$ to stabilize. 
 
 ###c)
 Here we want to refit the model by maximising the Laplace approximation of the marginal likelihood. This is done by using $nAGQ = 1$. 
@@ -195,12 +194,13 @@ mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=b
 #laplace er det samme som å sette nAGQ =1. Det er også default setting i glmer, vi kommer til å se litt endringer i estimater og tau
 summary(mod_laplace)
 ```
-By comparing the summaries of the two fitted models, we can see only slightly changes in some of the estimates. For example the estimate of $\tau_0$ is a bit lower for the model fitted by using 5 ???? quadratures points compared to the refitted model. Also the estimates for $\beta$ are slightly changed. 
+By comparing the summaries of the two fitted models, we can see only slightly changes in some of the estimates. For example the estimate of $\tau_0^2$ is a bit lower for the model fitted by using 10 quadratures points compared to the refitted model. Also the estimates for $\beta$ are slightly changed. 
 
 ###d)
 We now refit the model by maximising the Laplace approximation of the REML likelihood. 
 ```{r}
 #fitter med REML, skal gi mindre biased varianse (tror både tau og sigma skal bli nærmere virkelig verdi)
+#Ml gir biased varians, den underfitter. Forventer at tau skal bli litt større med REML
 library(glmmTMB)
 mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=TRUE)
 
