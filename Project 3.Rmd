@@ -133,12 +133,17 @@ $$ Y_{ij} = x_{ij}^T\beta + \gamma_{0,i} + \epsilon_{ij},$$
 
 STEMMER DETTE? SKAL VI HA MED Y = ...
 
-with $\gamma_{o,j}$ iid $\mathcal{N}(0,\tau_0^2)$ and $\epsilon_{ij}$ iid $\mathcal{N}(0,\sigma^2)$
+with $\gamma_{o,j}$ iid $\mathcal{N}(0,\tau_0^2)$ and $\epsilon_{ij}$ iid $\mathcal{N}(0,\sigma^2)$.
 
 The random effect is added to the linear predictior giving, 
-
-$$ \eta_{ij} = x_{ij}^T + \gamma_{0,i}$$
-
+$$ 
+  \eta_{ij} = x_{ij}^T + \gamma_{0,i}
+$$
+Tror vi må si noe om dette også, men vet ikke helt hvordan det blir..
+With the logit choice of link function $g(\pi_i)$ we have
+$$
+  g(\pi_i) = \log(\frac{\pi_i}{1-\pi_i})
+$$
 
 This model gives conditionally independent $Y_{ij}$s but they are not marginally independent.
 
@@ -148,7 +153,7 @@ We now want to fit the model by computing the marginal likelihood using Gauss-He
 library(lme4)
 
 #BRUKER QUADTRATURE POINTS MÅ TESTE UT FOR HVILKEN nAGQ DEN STABILISERER SEG
-mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 7, data = cbpp)
+mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 5, data = cbpp)
 
 #burde stabilisere seg rundt 5/6
 summary(mod)
@@ -161,6 +166,20 @@ print(fixef(mod), digits=15)
 #nAGQ = 5, intercept = -1.39920188258569
 #nAGQ = 6, intercept = -1.399211494824236
 #nAGQ = 7, intercept = -1.399235140053781
+
+intercept = rep(0,10)
+for (i in 1:10) {
+  mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = i, data = cbpp)
+  intercept_n = fixef(mod)[1]
+  
+  if (i > 1) {
+    intercept[i] = intercept_n - intercept_o
+  }
+  intercept_o =  intercept_n
+}
+nAGQ = c(1:10)
+plot(nAGQ, intercept, log = "x", type = "l", col = "blue", ylab = "error")
+
 ```
 By testing different number of quadrature points we see that five or six seems to be enough for the estimates of $\beta$ to stabilize. 
 
