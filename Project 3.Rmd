@@ -220,11 +220,26 @@ As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit
 
 ###e)
 ```{r}
+mod0 <- glmer(cbind(incidence, size-incidence)~1 +(1|herd), family=binomial(link = "logit"), nAGQ = 10, data = cbpp)
+anova=anova(mod0,mod)
+anova
+```{r}
 #herd: i
 #period : j
 #Hvilke modell skal vi bruke?
 x_new = data.frame(period = 1, herd = 1)
 
+test=-2*(anova$logLik[1]-anova$logLik[2])
+test
+pchisq(test, df=3, lower.tail=FALSE)
+
+modrandom <-glm(cbind(incidence, size-incidence)~period, family=binomial(link = "logit"),data = cbpp)
+#summary(modrandom)
+
+test2=-2*(logLik(modrandom)-logLik(mod))
+test2
+0.5*(pchisq(test2, df=5, lower.tail=FALSE)+pchisq(test2, df=4, lower.tail=FALSE))
+```
 beta = mod_reml$coefficients #funker ikke
 
 x_1 = c(1,1)
