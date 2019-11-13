@@ -134,12 +134,17 @@ $$ Y_{ij} = x_{ij}^T\beta + \gamma_{0,i} + \epsilon_{ij},$$
 
 STEMMER DETTE? SKAL VI HA MED Y = ...
 
-with $\gamma_{o,j}$ iid $\mathcal{N}(0,\tau_0^2)$ and $\epsilon_{ij}$ iid $\mathcal{N}(0,\sigma^2)$
+with $\gamma_{o,j}$ iid $\mathcal{N}(0,\tau_0^2)$ and $\epsilon_{ij}$ iid $\mathcal{N}(0,\sigma^2)$.
 
 The random effect is added to the linear predictior giving, 
-
-$$ \eta_{ij} = x_{ij}^T + \gamma_{0,i}$$
-
+$$ 
+  \eta_{ij} = x_{ij}^T + \gamma_{0,i}
+$$
+Tror vi må si noe om dette også, men vet ikke helt hvordan det blir..
+With the logit choice of link function $g(\pi_i)$ we have
+$$
+  g(\pi_i) = \log(\frac{\pi_i}{1-\pi_i})
+$$
 
 This model gives conditionally independent $Y_{ij}$s but they are not marginally independent.
 
