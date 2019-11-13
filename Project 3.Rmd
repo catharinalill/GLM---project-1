@@ -154,7 +154,8 @@ We now want to fit the model by computing the marginal likelihood using Gauss-He
 library(lme4)
 
 #BRUKER QUADTRATURE POINTS MÅ TESTE UT FOR HVILKEN nAGQ DEN STABILISERER SEG
-mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 5, data = cbpp)
+mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 10, data = cbpp)
+#nAGQ?????
 
 #burde stabilisere seg rundt 5/6
 summary(mod)
@@ -168,33 +169,34 @@ print(fixef(mod), digits=15)
 #nAGQ = 6, intercept = -1.399211494824236
 #nAGQ = 7, intercept = -1.399235140053781
 
-intercept = rep(0,10)
-for (i in 1:10) {
+n = 13
+intercept = rep(0,n)
+for (i in 1:n) {
   mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = i, data = cbpp)
   intercept_n = fixef(mod)[1]
   
   if (i > 1) {
-    intercept[i] = intercept_n - intercept_o
+    intercept[i] = abs(intercept_n - intercept_o)
   }
   intercept_o =  intercept_n
 }
-nAGQ = c(1:10)
-plot(nAGQ, intercept, log = "x", type = "l", col = "blue", ylab = "error")
+nAGQ = c(1:n)
+plot(nAGQ, intercept, log = "y", type = "l", col = "blue", ylab = "error")
 
 ```
-By testing different number of quadrature points we see that five or six seems to be enough for the estimates of $\beta$ to stabilize. 
+   
+By testing different number of quadrature points we see that five or six seems to be enough for the estimates of $\beta$ to stabilize.  ??? stabiliserer på 10??
 
 ###c)
-Here we want to refit the model by maximising the Laplace approximation of the marginal likelihood. 
+Here we want to refit the model by maximising the Laplace approximation of the marginal likelihood. This is done by using $nAGQ = 1$. 
 ```{r}
 #Refitting model using Laplace
 mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
 
 #laplace er det samme som å sette nAGQ =1. Det er også default setting i glmer, vi kommer til å se litt endringer i estimater og tau
-summary(mod)
+summary(mod_laplace)
 ```
-By looking at the summary of the refitted model we can see ....
-
+By comparing the summaries of the two fitted model, we can see only slightly changes in some of the estimates. For example the estimate of $\tau$ is a bit lower for the model fitted by using 5 ???? quadratures points compared to the refitted model. 
 
 ```{r}
 help(glmmTMB)
