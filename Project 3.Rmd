@@ -125,7 +125,6 @@ The restricted maximum likelihood estimates from $\texttt{mylmm}$ are $\hat\beta
 ```{r}
 library(lme4)
 data <-cbpp
-data
 ```
 
 We will model tha data using a GLMM random intercept model with period as fixed effect and herd as a random effect on the intercept. We will use the logit choice of link function and we assume that the $incidence_{ij} = Y_{ij}$ is binomially distributed with parameter $size_{ij}$ and $\pi_{ij}(\beta, \gamma)$. In mathematical notation we get
@@ -172,21 +171,17 @@ Here we want to refit the model by maximising the Laplace approximation of the m
 mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
 
 #laplace er det samme som å sette nAGQ =1. Det er også default setting i glmer, vi kommer til å se litt endringer i estimater og tau
-summary(mod)
+summary(mod_laplace)
 ```
 By looking at the summary of the refitted model we can see ....
-
-
-```{r}
-help(glmmTMB)
-```
 
 ###d)
 ```{r}
 #fitter med REML, skal gi mindre biassed varianse (tror både tau og sigma skal bli nærmere virkelig verdi)
-#mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
+library(glmmTMB)
+mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
 
-#summary(mod_reml)
+summary(mod_reml)
 ```
 ###e)
 
