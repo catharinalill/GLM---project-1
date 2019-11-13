@@ -198,7 +198,7 @@ By looking at the summary of the refitted model we can see ....
 ```{r}
 #fitter med REML, skal gi mindre biassed varianse (tror både tau og sigma skal bli nærmere virkelig verdi)
 library(glmmTMB)
-mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
+mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=TRUE)
 
 summary(mod_reml)
 ```
