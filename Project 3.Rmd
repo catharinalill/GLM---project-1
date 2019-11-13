@@ -25,7 +25,7 @@ The model can be expressed in matrix notation as,
 $$
   \boldsymbol{Y} = \boldsymbol{X}\boldsymbol{\beta} + \boldsymbol{U}\boldsymbol{\gamma} + \boldsymbol{\epsilon}.
 $$
-Here $\boldsymbol{Y} = [y_1 \ldots y_m]^T$, $\boldsymbol{X} = [x_1^T \ldots  x_m^T]^T$, $\boldsymbol{\gamma} = [\gamma_1 \ldots \gamma_m]^T$, $\boldsymbol{\epsilon}= [\epsilon_1^T \ldots \epsilon_m^T]^T$ and $\boldsymbol{U} = blockdiag(U_1, \ldots , U_m)$.
+Here $\boldsymbol{Y} = [y_1^T \ldots y_m^T]^T$, $\boldsymbol{X} = [x_1^T \ldots  x_m^T]^T$, $\boldsymbol{\gamma} = [\gamma_1 \ldots \gamma_m]^T$, $\boldsymbol{\epsilon}= [\epsilon_1^T \ldots \epsilon_m^T]^T$ and $\boldsymbol{U} = blockdiag(U_1, \ldots , U_m)$.
 Here $\boldsymbol{X}$ and $\boldsymbol{U}$ are design matrices, $\boldsymbol{\beta}$ is the vector for fixed effects and $\boldsymbol{\gamma}$ the vector of random effects. Since we have $\gamma_i$ and $\epsilon_{ij}$ mutually independent by assumption of the linear mixed models we have 
 $$
   \boldsymbol{\gamma} \sim N(0,G) \quad \textrm{and} \quad \boldsymbol{\epsilon} \sim N(0,R),  
@@ -125,7 +125,6 @@ The restricted maximum likelihood estimates from $\texttt{mylmm}$ are $\hat\beta
 ```{r}
 library(lme4)
 data <-cbpp
-data
 ```
 
 We will model tha data using a GLMM random intercept model with period as fixed effect and herd as a random effect on the intercept. We will use the logit choice of link function and we assume that the $incidence_{ij} = Y_{ij}$ is binomially distributed with parameter $size_{ij}$ and $\pi_{ij}(\beta, \gamma)$. In mathematical notation we get
@@ -198,16 +197,13 @@ summary(mod_laplace)
 ```
 By comparing the summaries of the two fitted model, we can see only slightly changes in some of the estimates. For example the estimate of $\tau$ is a bit lower for the model fitted by using 5 ???? quadratures points compared to the refitted model. 
 
-```{r}
-help(glmmTMB)
-```
-
 ###d)
 ```{r}
 #fitter med REML, skal gi mindre biassed varianse (tror både tau og sigma skal bli nærmere virkelig verdi)
-#mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
+library(glmmTMB)
+mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=TRUE)
 
-#summary(mod_reml)
+summary(mod_reml)
 ```
 ###e)
 
