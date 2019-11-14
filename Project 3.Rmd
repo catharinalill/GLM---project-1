@@ -219,7 +219,7 @@ mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=bi
 
 summary(mod_reml)
 ```
-As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. This is due to that fitting the model with REML gives a less biased variance. Hence, $\tau_0^2$ should be closer to its actual value. When fitting with maximum likelihood the variance get more biased and it underfits. Hence, as expect the estimate for $\tau_0^2$ get a bit larger when using restricted maximum likelihood instead of maximum likelihood. 
+As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. This is due to that fitting the model with REML gives a less biased variance. Hence, $\tau_0^2$ should be closer to its actual value. When fitting with maximum likelihood the variance get more biased and is underfitted. Hence, as expect the estimate for $\tau_0^2$ get a bit larger when using restricted maximum likelihood instead of maximum likelihood. 
 
 To further investigate if this estimate wiht REML is preferable over the maximum likelihood estimate we want to investigate the bias . can simulate draw many realisations from a known model with known parameters and then find an average value of these. 
 How to further investigate ????
