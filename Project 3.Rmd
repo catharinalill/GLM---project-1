@@ -156,25 +156,10 @@ with $\gamma_{0,i}$ iid $\mathcal{N}(0,\tau_0^2)$ and $\epsilon_{ij}$ iid $\math
 
 ###b)
 We now want to fit the model by computing the marginal likelihood using Gauss-Hermite quadrature. We investigate how many quadrature points we need to reliably compute the MLEs of $\beta$ to a numerical accuracy of 0. 
+
 ```{r}
 library(lme4)
-
-#BRUKER QUADTRATURE POINTS MÅ TESTE UT FOR HVILKEN nAGQ DEN STABILISERER SEG
-mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 10, data = cbpp)
-#nAGQ?????
-
-#burde stabilisere seg rundt 5/6
-summary(mod)
-#print(fixef(mod), digits=15)
-
-#nAGQ = 1, intercept = -1.39834286446214
-#nAGQ = 2, intercept = -1.397945612319865
-#nAGQ = 3, intercept = -1.398037319121611
-#nAGQ = 4, intercept = -1.399265834284414
-#nAGQ = 5, intercept = -1.39920188258569
-#nAGQ = 6, intercept = -1.399211494824236
-#nAGQ = 7, intercept = -1.399235140053781
-
+#Compute the marginal likelihood using Gauss-Hermite quadrature for different number of quadrature points, specified with the nAGQ-argument. 
 n = 13
 intercept = rep(0,n)
 for (i in 1:n) {
@@ -187,11 +172,20 @@ for (i in 1:n) {
   intercept_o =  intercept_n
 }
 nAGQ = c(1:n)
+
+#Plot log10 of the absolute numerical error against nAGQ
 plot(nAGQ, intercept, log = "y", type = "l", col = "blue", ylab = "error")
 
 ```
    
 By testing different number of quadrature points we see that 10 seems to be enough for the estimates of $\beta$ to stabilize. 
+
+```{r}
+#Fit the model with 10 quadrature points
+mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 10, data = cbpp)
+
+summary(mod)
+```
 
 ###c)
 Here we want to refit the model by maximising the Laplace approximation of the marginal likelihood. This is done by using $nAGQ = 1$. 
