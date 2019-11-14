@@ -247,12 +247,8 @@ For the random effects we fitted a glm model without random effects (this is our
 ###f)
 We want to calculate the ratio between the odds that cattle develop CBPP wihtin a given herd for period 2 relative to period 1. We also want to calculate this odds-ratio for the changing in the incidence of CBPP on the level of all herds.
 ```{r}
-x_new = data.frame(period = 1, herd = 1)
 beta = fixef(mod_reml)$cond 
 beta
-
-x_1 = c(1,0,0,0)
-x_2 = c(1,1,0,0)
 
 #Odds ratio for a given herd
 odds_ratio = exp(beta[2])
@@ -276,15 +272,14 @@ Based on the estimated model we use simulations to find a numerical estimate of 
 #Extract tau from model
 b=summary(mod_reml)
 tau = b$varcor$cond$herd[1]
-
 size = 20
 
 #Simulate 1000 gammas from this normal distribution
 gammas = rnorm(1000, 0, tau) #skal denne være i annne 
-#perios 1
+#Period 1
 pi_log_en = beta[1]  + gammas
 
-#period 2
+#Period 2
 pi_log_to= beta[1] + beta[2] + gammas
 
 #Get the numbers for new insidences
