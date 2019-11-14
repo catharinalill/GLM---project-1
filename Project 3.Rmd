@@ -194,12 +194,11 @@ plot(nAGQ, intercept, log = "y", type = "l", col = "blue", ylab = "error")
 By testing different number of quadrature points we see that 10 seems to be enough for the estimates of $\beta$ to stabilize. 
 
 ###c)
-Here we want to refit the model by maximising the Laplace approximation of the marginal likelihood. This is done by using $nAGQ = 1$. 
+Here we want to refit the model by maximising the Laplace approximation of the marginal likelihood. This is done by using $nAGQ = 1$ which is the default for glmer. 
 ```{r}
 #Refitting model using Laplace
 mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
 
-#laplace er det samme som å sette nAGQ =1. Det er også default setting i glmer, vi kommer til å se litt endringer i estimater og tau
 summary(mod_laplace)
 ```
 By comparing the summaries of the two fitted models, we can see only slightly changes in some of the estimates. For example the estimate of $\tau_0^2$ is a bit lower for the model fitted by using 10 quadratures points compared to the refitted model. Also the estimates for $\beta$ are slightly changed. 
@@ -207,14 +206,13 @@ By comparing the summaries of the two fitted models, we can see only slightly ch
 ###d)
 We now refit the model by maximising the Laplace approximation of the REML likelihood. 
 ```{r}
-#fitter med REML, skal gi mindre biased varianse (tror både tau og sigma skal bli nærmere virkelig verdi)
-#Ml gir biased varians, den underfitter. Forventer at tau skal bli litt større med REML
+#refitt model with REML
 library(glmmTMB)
 mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=TRUE)
 
 summary(mod_reml)
 ```
-As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. This is due to that fitting the model with REML gives a less biased variance. Hence, $\tau_0^2$ should be closer to its actual value. When fitting with maximum likelihood the variance gets biased and it underfits. Hence, as expect the estimate for $\tau_0^2$ get a bit larger when using restricted maximum likelihood instead of maximum likelihood. 
+As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. This is due to that fitting the model with REML gives a less biased variance.   Hence, $\tau_0^2$ should be closer to its actual value. When fitting with maximum likelihood the variance gets biased and is underfitted. Hence, as expect the estimate for $\tau_0^2$ get a bit larger when using restricted maximum likelihood instead of maximum likelihood. 
 How to further investigate ????
 
 ###e)
@@ -239,7 +237,7 @@ print("p-verdi test of random effects")
 p_2
 ```
 
-SKAL HA MED EN TEST FOR FIXED EFFEKT LITKEVEL, HILSEN JARLE. MEN DET ER DET SAMME SOM RANDOM EFFECT
+
 For the test of significans of fixed effekts the null hypotheses is that all the betas are equal to zero. We therefor fitted a model without period (only intercept and random effects). This is our "small model". Then we extracted the loglikelihood for this model as well as for the full model ($H_1$) and used the formula for LRT test statistic. We get a p-value = $0.0200648$ so the nullhypotheses is rejected for level $0.05$. 
 
 For the random effects we fitted a glm model without random effekts (this is our "small" model) and used the likelihood for this model as well as for the full model to compute the LRT test statistic. The small model is in this case the null hypotheses. This is on the boundary of our parameter space. We then use the formula for computing the p value when the null hypotheses is on the boundary by using a mixture of the $\chi^2_0$ and the $\chi^2_1$ to get the correct p value. We can see that we get a very small p-value $0.0003192463$ so we reject $H_0$ and keep the random effects.   
