@@ -212,18 +212,20 @@ How to further investigate ????
 ###e)
 ```{r}
 #fixed effekts les av p verdier
-summary(mod)
+#summary(mod)
 
 modrandom <-glm(cbind(incidence, size-incidence)~period, family=binomial(link = "logit"),data = cbpp)
 
-test2=-2*(logLik(modrandom)-logLik(mod))
+test2=-2*(logLik(modrandom)-logLik(mod_reml))
 test2
 p = 0.5*(pchisq(test2, df=0, lower.tail=FALSE)+pchisq(test2, df=1, lower.tail=FALSE))
 print("p-verdi")
 p
 ```
 
+For the fixed effect we use the summery of the full model. R alreaddy does a test of significance of the fixed effects and we can see that they are al significant on level $0.05$. 
 
+For the random effects we fitted a glm model without random effekts (this is our "small" model) and used the likelihood for this model as well as for the full model to compute the LRT test statistic. The small model is in this case the null hypotheses. This is on the boundary of our parameter space. We then use the formula for computing the p value when the null hypotheses is on the boundary by using a mixture of the $\chi^2_0$ and the $\chi^2_1$ to get the correct p value. We can see that we get a very small p-value so we reject $H_0$ and keep the random effects.   
 ###f)
 
 ```{r}
