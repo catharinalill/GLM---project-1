@@ -235,6 +235,7 @@ modrandom <-glm(cbind(incidence, size-incidence)~period, family=binomial(link = 
 test2=-2*(logLik(modrandom)-logLik(mod))
 test2
 0.5*(pchisq(test2, df=5, lower.tail=FALSE)+pchisq(test2, df=4, lower.tail=FALSE))
+help("pvalues")
 ```
 
 
@@ -277,3 +278,11 @@ help(ranef)
 
 
 ###g)
+Based on the estimated model, use simulations or numerical integration to find a numerical estimate of the intraclass (within-herd) correlation between the incidence of CBPP (number of cases) for a herd of size 20 based on the fixed effect estimates for period 1.
+The correlation between Yij and Yil (two observations in the same cluster, that is, same beach) dependes in a complicated way on the observed values for x and is rather difficult to interpret.
+Corr(Yij,Yil)=Cov(Yij,Yil)/sqrt(Var(Yij)Var(Yil))
+```{r}
+
+```
+
+
