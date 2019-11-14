@@ -280,7 +280,7 @@ tau = b$varcor$cond$herd[1]
 
 size = 20
 
-set.seed <- 100
+set.seed(100)
 #simulate 1000 gammas from this normal distribution
 gammas = rnorm(1000, 0, tau**0.5) #skal denne være i annne 
 #gammas
