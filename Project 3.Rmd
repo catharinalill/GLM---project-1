@@ -223,6 +223,7 @@ print("p-verdi")
 p
 ```
 
+SKAL HA MED EN TEST FOR FIXED EFFEKT LITKEVEL, HILSEN JARLE. MEN DET ER DET SAMME SOM RANDOM EFFECT
 For the fixed effect we use the summery of the full model. R alreaddy does a test of significance of the fixed effects and we can see that they are al significant on level $0.05$. 
 
 For the random effects we fitted a glm model without random effekts (this is our "small" model) and used the likelihood for this model as well as for the full model to compute the LRT test statistic. The small model is in this case the null hypotheses. This is on the boundary of our parameter space. We then use the formula for computing the p value when the null hypotheses is on the boundary by using a mixture of the $\chi^2_0$ and the $\chi^2_1$ to get the correct p value. We can see that we get a very small p-value so we reject $H_0$ and keep the random effects.   
@@ -269,7 +270,33 @@ Based on the estimated model, use simulations or numerical integration to find a
 The correlation between Yij and Yil (two observations in the same cluster, that is, same beach) dependes in a complicated way on the observed values for x and is rather difficult to interpret.
 Corr(Yij,Yil)=Cov(Yij,Yil)/sqrt(Var(Yij)Var(Yil))
 ```{r}
+#bruker beta fra tidligere i oppgaven
+
+b=summary(mod_reml)
+b
+beta[2]
+beta[1]
+#Extract tau from model
+tau = b$varcor$cond$herd[1]
+
+size = 20
+
+#simulate 1000 gammas from this normal distribution
+gammas = rnorm(1000, 0, tau) #skal denne være i annne 
+gammas
+#perios 1
+pi_log_en = beta[1]  + gammas
+
+#period 2
+pi_log_to= beta[1] + beta[2] + gammas
+
+#get the numbers for new insidences
+Y_real_en = size* exp(pi_log_en)/(1 + exp(pi_log_en))
+Y_real_to = size* exp(pi_log_to)/(1 + exp(pi_log_to))
+
+#find the correlation
+cor(Y_real_en, Y_real_to)
 
 ```
-
+By simulating a thousand realisations of gammas and then computing the corresponding responses for a herd with fixed size 20 we compute the intraclass correlation between period one and two. We get a very high correlation ($0.997$). This means that the results from period one and two resemble each other a lot. This suggests that the random variable is of great importance. 
 
