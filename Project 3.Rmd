@@ -210,31 +210,25 @@ As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit
 How to further investigate ????
 
 ###e)
+We test the significance of the random and fixed effects in the model using likelihood ratio tests and compute the associated p-values of the tests. 
 ```{r}
-#fixed effekts les av p verdier
-#summary(mod)
+#Test for fixed effects
 modfixed <- glmmTMB(cbind(incidence, size-incidence)~1 +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=TRUE)
-
-modrandom <-glm(cbind(incidence, size-incidence)~period, family=binomial(link = "logit"),data = cbpp)
-
-#test for fixed effects
-
 test1 = -2*(logLik(modfixed)-logLik(mod_reml))
-p_1 = pchisq(test2, df=4, lower.tail=FALSE)
-print("p-verdi test of fixed effects")
-p_1
+p_1 = pchisq(test1, df=4, lower.tail=FALSE)
+p_1 #p-value
 
+#Test for random effects
+modrandom <-glm(cbind(incidence, size-incidence)~period, family=binomial(link = "logit"),data = cbpp)
 test2=-2*(logLik(modrandom)-logLik(mod_reml))
-
 p_2 = 0.5*(pchisq(test2, df=0, lower.tail=FALSE)+pchisq(test2, df=1, lower.tail=FALSE))
-print("p-verdi test of random effects")
-p_2
+p_2 #p-value
 ```
 
+For the test of significans of fixed effects the null hypotheses is that all the betas are equal to zero. We therefor fitted a model without period (only intercept and random effects). This is our "small model". Then we extracted the loglikelihood for this model as well as for the full model ($H_1$) and used the formula for LRT test statistic. We get a very small p-value = $6.955269e-05$ so the nullhypotheses is rejected for level $0.05$. 
 
-For the test of significans of fixed effekts the null hypotheses is that all the betas are equal to zero. We therefor fitted a model without period (only intercept and random effects). This is our "small model". Then we extracted the loglikelihood for this model as well as for the full model ($H_1$) and used the formula for LRT test statistic. We get a p-value = $0.0200648$ so the nullhypotheses is rejected for level $0.05$. 
+For the random effects we fitted a glm model without random effects (this is our "small" model) and used the likelihood for this model as well as for the full model to compute the LRT test statistic. The small model is in this case the null hypotheses. This is on the boundary of our parameter space. We then use the formula for computing the p value when the null hypotheses is on the boundary by using a mixture of the $\chi^2_0$ and the $\chi^2_1$ to get the correct p-value. We can see that we get a p-value = $0.0003192463$ so we reject $H_0$ and keep the random effects.   
 
-For the random effects we fitted a glm model without random effekts (this is our "small" model) and used the likelihood for this model as well as for the full model to compute the LRT test statistic. The small model is in this case the null hypotheses. This is on the boundary of our parameter space. We then use the formula for computing the p value when the null hypotheses is on the boundary by using a mixture of the $\chi^2_0$ and the $\chi^2_1$ to get the correct p value. We can see that we get a very small p-value $0.0003192463$ so we reject $H_0$ and keep the random effects.   
 ###f)
 We want to calculate the ratio between the odds that cattle develop CBPP wihtin a given herd for period 2 relative to period 1. We also want to calculate this odds-ratio for the changing in the incidence of CBPP on the level of all herds.
 ```{r}
