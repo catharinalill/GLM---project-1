@@ -213,7 +213,7 @@ By comparing the summaries of the two fitted models, we can see only slightly ch
 ###d)
 We now refit the model by maximising the Laplace approximation of the REML likelihood. 
 ```{r}
-#refitt model with REML
+#Refit the  model with REML
 library(glmmTMB)
 mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=TRUE)
 
@@ -247,8 +247,6 @@ For the random effects we fitted a glm model without random effects (this is our
 ###f)
 We want to calculate the ratio between the odds that cattle develop CBPP wihtin a given herd for period 2 relative to period 1. We also want to calculate this odds-ratio for the changing in the incidence of CBPP on the level of all herds.
 ```{r}
-#herd: i
-#period : j
 #Hvilke modell skal vi bruke?
 x_new = data.frame(period = 1, herd = 1)
 beta = fixef(mod_reml)$cond 
@@ -276,31 +274,25 @@ The effect on the log-odds is linear if we have a one unit change in the period.
 Based on the estimated model we use simulations to find a numerical estimate of the intraclass correlation between the incidence of CBPP for a herd with fixed size 20 for period 1 and period 2.
 
 ```{r}
-#bruker beta fra tidligere i oppgaven
-
-b=summary(mod_reml)
-b
-beta[2]
-beta[1]
 #Extract tau from model
+b=summary(mod_reml)
 tau = b$varcor$cond$herd[1]
 
 size = 20
 
-#simulate 1000 gammas from this normal distribution
+#Simulate 1000 gammas from this normal distribution
 gammas = rnorm(1000, 0, tau) #skal denne være i annne 
-gammas
 #perios 1
 pi_log_en = beta[1]  + gammas
 
 #period 2
 pi_log_to= beta[1] + beta[2] + gammas
 
-#get the numbers for new insidences
+#Get the numbers for new insidences
 Y_real_en = size* exp(pi_log_en)/(1 + exp(pi_log_en))
 Y_real_to = size* exp(pi_log_to)/(1 + exp(pi_log_to))
 
-#find the correlation
+#Find the correlation
 cor(Y_real_en, Y_real_to)
 
 ```
