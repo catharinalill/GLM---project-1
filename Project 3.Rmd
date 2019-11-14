@@ -272,7 +272,7 @@ Based on the estimated model we use simulations to find a numerical estimate of 
 #bruker beta fra tidligere i oppgaven
 
 b=summary(mod_reml)
-b
+
 beta[2]
 beta[1]
 #Extract tau from model
@@ -280,9 +280,10 @@ tau = b$varcor$cond$herd[1]
 
 size = 20
 
+set.seed <- 100
 #simulate 1000 gammas from this normal distribution
-gammas = rnorm(1000, 0, tau) #skal denne være i annne 
-gammas
+gammas = rnorm(1000, 0, tau**0.5) #skal denne være i annne 
+#gammas
 #perios 1
 pi_log_en = beta[1]  + gammas
 
@@ -297,5 +298,5 @@ Y_real_to = size* exp(pi_log_to)/(1 + exp(pi_log_to))
 cor(Y_real_en, Y_real_to)
 
 ```
-By simulating a thousand realisations of gammas and then computing the corresponding responses for a herd with fixed size 20 we compute the intraclass correlation between period one and two. We get a very high correlation ($0.997$). This means that the results from period one and two resemble each other a lot. This suggests that the random variable is of great importance. 
+By simulating a thousand realisations of gammas and then computing the corresponding responses for a herd with fixed size 20 we compute the intraclass correlation between period one and two. We get a very high correlation ($0.9914$). This means that the results from period one and two resemble each other a lot. This suggests that the random variable is of great importance. 
 
