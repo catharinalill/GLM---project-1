@@ -129,32 +129,22 @@ data <-cbpp
 
 We will model tha data using a GLMM random intercept model with period as fixed effect and herd as a random effect on the intercept. We will use the logit choice of link function and we assume that the $incidence_{ij} = Y_{ij}$ is binomially distributed with parameter $size_{ij}$ and $\pi_{ij}(\beta, \gamma)$. Thus, we have $E(Y_{ij}) = \pi_{ij} = \mu_{ij}$. 
 
-<!--
-and $Var(Y_{ij}) = size_{ij}\pi_{ij}(1-\pi_{ij})$.
-In mathematical notation we get
-
 $$ 
   Y_{ij} = x_{ij}^T\beta + \gamma_{0,i} + \epsilon_{ij},
 $$
 with $\gamma_{0,i}$ iid $\mathcal{N}(0,\tau_0^2)$ and $\epsilon_{ij}$ iid $\mathcal{N}(0,\sigma^2)$.
--->
 
-The random effect is added to the general linear predictior giving the new linear predictor which is, 
+The random effect is added to the linear predictior giving, 
 $$ 
-  \eta_{ij} = x_{ij}^T\beta + \gamma_{0,i}
+  \eta_{ij} = x_{ij}^T + \gamma_{0,i}
 $$
-The linear predictor is linked to mean via the logit link function $g$. That is, $g(\mu_{ij}) = \eta_{ij}$, such that we have   pi eller mu her inni g??? 
+Tror vi må si noe om dette også, men vet ikke helt hvordan det blir..
+We have logit choice of link function $g(\pi_{ij})$  which is as given in problem 1. 
 $$
-  g(\mu_{ij}) = g(size_{ij}\pi_{ij}) = \frac{size_{ij}\pi_{ij}}{}
-$$  
-<!--
-We have logit choice of link function $g(\pi_{ij}) $  which is as given in problem 1. 
+  g(\pi_i) = \log(\frac{\pi_i}{1-\pi_i})
 $$
-  g(\pi_{ij}) = \log(\frac{\pi_{ij}{1-\pi_{ij})
-$$
--->
-This model gives conditionally independent $Y_{ij}$s but they are not marginally independent.
 
+This model gives conditionally independent $Y_{ij}$s but they are not marginally independent.
 
 ###b)
 We now want to fit the model by computing the marginal likelihood using Gauss-Hermite quadrature. We investigate how many quadrature points we need to reliably compute the MLEs of $\beta$ to a numerical accuracy of 0. 
@@ -167,7 +157,7 @@ mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(
 
 #burde stabilisere seg rundt 5/6
 summary(mod)
-print(fixef(mod), digits=15)
+#print(fixef(mod), digits=15)
 
 #nAGQ = 1, intercept = -1.39834286446214
 #nAGQ = 2, intercept = -1.397945612319865
@@ -221,21 +211,16 @@ How to further investigate ????
 
 ###e)
 ```{r}
-#Model with only fixed effects
-mod0 <- glmer(cbind(incidence, size-incidence)~1 +(1|herd), family=binomial(link = "logit"), nAGQ = 10, data = cbpp)
-anova=anova(mod0,mod)
-anova
-
-test=-2*(anova$logLik[1]-anova$logLik[2])
-test
-pchisq(test, df=3, lower.tail=FALSE)
+#fixed effekts les av p verdier
+summary(mod)
 
 modrandom <-glm(cbind(incidence, size-incidence)~period, family=binomial(link = "logit"),data = cbpp)
-#summary(modrandom)
 
 test2=-2*(logLik(modrandom)-logLik(mod))
 test2
-0.5*(pchisq(test2, df=5, lower.tail=FALSE)+pchisq(test2, df=4, lower.tail=FALSE))
+p = 0.5*(pchisq(test2, df=0, lower.tail=FALSE)+pchisq(test2, df=1, lower.tail=FALSE))
+print("p-verdi")
+p
 ```
 
 
@@ -276,3 +261,11 @@ odds_ratio
 
 
 ###g)
+Based on the estimated model, use simulations or numerical integration to find a numerical estimate of the intraclass (within-herd) correlation between the incidence of CBPP (number of cases) for a herd of size 20 based on the fixed effect estimates for period 1.
+The correlation between Yij and Yil (two observations in the same cluster, that is, same beach) dependes in a complicated way on the observed values for x and is rather difficult to interpret.
+Corr(Yij,Yil)=Cov(Yij,Yil)/sqrt(Var(Yij)Var(Yil))
+```{r}
+
+```
+
+
