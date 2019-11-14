@@ -126,24 +126,37 @@ The restricted maximum likelihood estimates from $\texttt{mylmm}$ are $\hat\beta
 library(lme4)
 data <-cbpp
 ```
-We will model tha data using a GLMM random intercept model with period as fixed effect and herd as a random effect on the intercept. We will use the logit choice of link function and we assume that the $incidence_{ij} = Y_{ij}$ is binomially distributed with parameter $size_{ij}$ and $\pi_{ij}$, where $ i = 1,\ldots,15$ and $j = 1,\ldots,4$. Moreover we assume $Y_{ij} | \gamma_{0i} \sim bin(size_{ij},\pi_{ij})$, where $\gamma_{0i}$ is the random effects. This means we assume that given the random effects $\gamma_{0i}$ the responses $Y_{ij}$ are conditionally independent. Since we have grouped data we can consider the scaled response $\bar{Y}_{ij} = \frac{Y_{ij}}{size_{ij}}$. This means $\bar{Y}_{ij} | \gamma_i \sim \frac{bin(size_{ij},\pi_{ij})}{size_{ij}}$. Thus, we have $E(\bar{Y}_{ij}| \gamma_i) = \pi_{ij} = \mu_{ij}$. 
+We will model tha data using a GLMM random intercept model with period as fixed effect and herd as a random effect on the intercept. We will use the logit choice of link function and we assume that the $incidence_{ij} = Y_{ij}$ is binomially distributed with parameter $size_{ij}$ and $\pi_{ij}$, where $i = 1,\ldots,15$ and $j = 1,\ldots,4$. Moreover we assume 
+$$
+  Y_{ij} | \gamma_{0i} \sim bin(size_{ij},\pi_{ij}),
+$$
+where $\gamma_{0i}$ is the random effects. This means we assume that given the random effects $\gamma_{0i}$ the responses $Y_{ij}$ are conditionally independent. We also assume that the random effect are independent and indentically distributed with 
+$$
+  \gamma_{0i} \sim N(0,\tau_0^2).
+$$
 
-The random effect is added to the general linear predictior giving the new linear predictor which is, 
+Since we have grouped data we can consider the scaled response $\bar{Y}_{ij} = \frac{Y_{ij}}{size_{ij}}$. This means 
+$$
+\bar{Y}_{ij} | \gamma_i \sim \frac{bin(size_{ij},\pi_{ij})}{size_{ij}}.
+$$
+Thus, we have $E(\bar{Y}_{ij}| \gamma_i) = \pi_{ij}$. 
+
+The random effect is added to the general linear predictior giving,
 $$ 
   \eta_{ij} = x_{ij}^T\beta + \gamma_{0,i},
 $$
-where $\beta
-The linear predictor is linked to mean via the logit link function $g$. That is, $g(\mu_{ij}) = \eta_{ij}$, such that we have
+where $\beta = [\beta_0,\beta_2,\beta_3,\beta_4]$ and $x_{ij} = [1,period_2,period_3, period_4]$. The linear predictor $\eta_{ij}$ is linked to the mean $\pi_{ij}$ by use of the logit link function $g$. That is, $g(\pi_{ij}) = \eta_{ij}$, such that we have $\pi_{ij} = g^{-1}(\eta_{ij})$. Hence, 
 $$
-  g(\mu_{ij}) = 
+  \pi_{ij} = \frac{exp(\eta_{ij})}{1+exp(\eta_{ij})}.
 $$
 <!--
 We have logit choice of link function $g(\pi_{ij}) $  which is as given in problem 1. 
 $$
   g(\pi_{ij}) = \log(\frac{\pi_{ij}{1-\pi_{ij})
 $$
--->
 This model gives conditionally independent $Y_{ij}$s but they are not marginally independent.
+-->
+
 <!--
 and $Var(Y_{ij}) = size_{ij}\pi_{ij}(1-\pi_{ij})$.
 In mathematical notation we get
@@ -214,7 +227,9 @@ mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=bi
 
 summary(mod_reml)
 ```
-As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. This is due to that fitting the model with REML gives a less biased variance. Hence, $\tau_0^2$ should be closer to its actual value. When fitting with maximum likelihood the variance gets biased and it underfits. Hence, as expect the estimate for $\tau_0^2$ get a bit larger when using restricted maximum likelihood instead of maximum likelihood. 
+As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. This is due to that fitting the model with REML gives a less biased variance. Hence, $\tau_0^2$ should be closer to its actual value. When fitting with maximum likelihood the variance get more biased and it underfits. Hence, as expect the estimate for $\tau_0^2$ get a bit larger when using restricted maximum likelihood instead of maximum likelihood. 
+
+To further investigate if this estimate wiht REML is preferable over the maximum likelihood estimate we want to investigate the bias . can simulate draw many realisations from a known model with known parameters and then find an average value of these. 
 How to further investigate ????
 
 ###e)
@@ -262,8 +277,6 @@ odds_ratio
 
 ```
 The effect on the log-odds is linear if we have a one unit change in the period. Hence, when changing the period with one unit, the effect on the odds is multiplicative. Thus, the ratio between odds for a given herd is 0.379 and the ratio for all herds is 0.402. This tells us that for a given herd there is a larger change in the odds, then for the whole population. 
-??? logit/log(odds) = linear predictor???
-
 
 ###g)
 Based on the estimated model, use simulations or numerical integration to find a numerical estimate of the intraclass (within-herd) correlation between the incidence of CBPP (number of cases) for a herd of size 20 based on the fixed effect estimates for period 1.
