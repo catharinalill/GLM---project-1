@@ -127,7 +127,7 @@ library(lme4)
 data <-cbpp
 ```
 
-We will model tha data using a GLMM random intercept model with period as fixed effect and herd as a random effect on the intercept. We will use the logit choice of link function and we assume that the $incidence_{ij} = Y_{ij}$ is binomially distributed with parameter $size_{ij}$ and $\pi_{ij}(\beta, \gamma)$. Thus, we have $E(Y_{ij}) = size_{ij}\pi_{ij} = \mu_{ij}$. 
+We will model tha data using a GLMM random intercept model with period as fixed effect and herd as a random effect on the intercept. We will use the logit choice of link function and we assume that the $incidence_{ij} = Y_{ij}$ is binomially distributed with parameter $size_{ij}$ and $\pi_{ij}(\beta, \gamma)$. Thus, we have $E(Y_{ij}) = \pi_{ij} = \mu_{ij}$. 
 
 <!--
 and $Var(Y_{ij}) = size_{ij}\pi_{ij}(1-\pi_{ij})$.
@@ -216,7 +216,8 @@ mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=bi
 
 summary(mod_reml)
 ```
-As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. Why????
+As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. This is due to that fitting the model with REML gives a less biased variance. Hence, $\tau_0^2$ should be closer to its actual value. When fitting with maximum likelihood the variance gets biased and it underfits. Hence, as expect the estimate for $\tau_0^2$ get a bit larger when using restricted maximum likelihood instead of maximum likelihood. 
+How to further investigate ????
 
 ###e)
 ```{r}
@@ -244,16 +245,32 @@ test2
 #period : j
 #Hvilke modell skal vi bruke?
 x_new = data.frame(period = 1, herd = 1)
-beta = mod_reml$coefficients #funker ikke
+beta = fixef(mod_reml)$cond 
+beta
 
-x_1 = c(1,1)
-x_2 = c(1,2)
-pi_1 = exp()   #predict(mod_reml, period = 1) #include intercept and one covariate
-pi_1
-pi_2 = predict(c(1,2), mod_reml)
+x_1 = c(1,0,0,0)
+x_2 = c(1,1,0,0)
+
+#Odds ratio for a given herd
+pi_1 = exp(x_1%*%beta)/(1+ exp(x_1%*%beta))
+pi_2 =  exp(x_2%*%beta)/(1+ exp(x_2%*%beta))
 odds_1 = pi_1/(1-pi_1)
 odds_2 = pi_2/(1-pi_2)
 odds_ratio = odds_2/odds_1
+odds_ratio
+
+#Odds ratio for all herds
+tau = ranef(mod_reml)
+tau
+c = 1/sqrt(0.6*tau^2+1)
+beta = c*beta
+pi_1 = exp(x_1%*%beta)/(1+ exp(x_1%*%beta))
+pi_2 =  exp(x_2%*%beta)/(1+ exp(x_2%*%beta))
+odds_1 = pi_1/(1-pi_1)
+odds_2 = pi_2/(1-pi_2)
+odds_ratio = odds_2/odds_1
+odds_ratio
+help(ranef)
 
 ```
 
