@@ -187,20 +187,19 @@ for (i in 1:n) {
 nAGQ = c(1:n)
 
 #Plot log10 of the absolute numerical error against nAGQ
-plot(nAGQ, intercept, log = "y", type = "l", col = "blue", ylab = "error")
+plot(nAGQ, intercept, log = "y", type = "l", col = "blue", ylab = "difference")
 
 ```
-   
-By testing different number of quadrature points we see that from around 6 quadrature points we get a numerical low enough error. This error will be much lower than the statistical error and is therefor good enough. 
+The plot above shows the absolute difference in parameter estimates, $|\beta_{k+1}-\beta_k|$, against number of quandrature points. From this we can see that around 6 quadrature points gives a low numerical error. This error will be much lower than the statistical error and is therefore good enough. Moreover after 13 quadrature points adding more points does not give any change in parameter estimates.
 
+<!--
 10 seems to be enough for the estimates of $\beta$ to stabilize. 
-
-
 nok fra 6 frodi numerisk fei my emindre en statistisk 
+-->
 
 ```{r}
-#Fit the model with 10 quadrature points
-mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 10, data = cbpp)
+#Fit the model with 6 quadrature points
+mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 6, data = cbpp)
 
 summary(mod)
 ```
@@ -213,10 +212,10 @@ mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=b
 
 summary(mod_laplace)
 ```
-By comparing the summaries of the two fitted models, we can see only slightly changes in some of the estimates. For example the estimate of $\tau_0^2$ is a bit larger for the model fitted by using 10 quadratures points compared to the refitted model. Also the estimates for $\beta$ are slightly changed. 
+By comparing the summaries of the two fitted models, we can see only slightly changes in some of the estimates. For example the estimate of $\tau_0^2$ is a bit larger for the model fitted by using 6 quadratures points compared to the refitted model. Also the estimates for $\beta$ are slightly changed. 
 
 ###d)
-We now refit the model by maximising the Laplace approximation of the REML likelihood. 
+We now refit the model by maximising the Laplace approximation of the restricted maximum likelihood.
 ```{r}
 #Refit the  model with REML
 library(glmmTMB)
@@ -224,14 +223,16 @@ mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=bi
 
 summary(mod_reml)
 ```
-As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. This is due to that fitting the model with REML gives a less biased variance. Hence, $\tau_0^2$ should be closer to its actual value. When fitting with maximum likelihood the variance get more biased and is underfitted. Hence, as expect the estimate for $\tau_0^2$ get a bit larger when using restricted maximum likelihood instead of maximum likelihood. 
+As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. When fitting with maximum likelihood the estimated variance is biased and is usually underfitted. When using restricted maximum likelihood instead, this is supposed to give a less biased estimate for the variance. Hence, as expect the estimate for $\tau_0^2$ gets a bit larger with REML. This should result in $\tau_0^2$ closer to its actual value.
 
+<!--
 To further investigate if this estimate wiht REML is preferable over the maximum likelihood estimate we want to investigate the bias of $\tau_0^2$. We can then simulate draw many realisations from a known model with known parameters and then find an average value of these. 
-To further investigate if this estimate wiht REML is preferable over the maximum likelihood estimate we want to investigate if the bias actually is smaller. To do so one can simulate many realisations from a known model with known parameters to create many new datasets. Then one could fit all of these datasets again and retreve new estimates for $\tau$. Then one could compute the average of these $\tau$s and compare this to the original estimate. One would expect that the difference would be smaller when using REML versus ML.  
+-->
+To further investigate if this estimate wiht REML is preferable over the maximum likelihood estimate we want to investigate if the bias is actually smaller. To do so one can simulate many realisations from a known model with known parameters to create many new datasets. Then one could fit all of these datasets and retreve new estimates for $\tau$. Further one has to compute the average of these $\tau$s and compare this to the initial estimate. One would expect that the difference between the simulated average and our initial etimated $\tau$ is smaller when using REML than ML. 
 
-How to further investigate ????
-
+<!--
 kjente param, simuler gammaer og yer gitt simulerte gammaer så får man mange real av datasett 
+-->
 
 ###e)
 We test the significance of the random and fixed effects in the model using likelihood ratio tests and compute the associated p-values of the tests. 
@@ -239,7 +240,7 @@ We test the significance of the random and fixed effects in the model using like
 #Test for fixed effects
 modfixed <- glmmTMB(cbind(incidence, size-incidence)~1 +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=FALSE)
 test1 = -2*(logLik(modfixed)-logLik(mod))
-p_1 = pchisq(test1, df=4, lower.tail=FALSE)
+p_1 = pchisq(test1, df=3, lower.tail=FALSE)
 p_1 #p-value
 
 #Test for random effects
@@ -248,10 +249,15 @@ test2=-2*(logLik(modrandom)-logLik(mod))
 p_2 = 0.5*(pchisq(test2, df=0, lower.tail=FALSE)+pchisq(test2, df=1, lower.tail=FALSE))
 p_2 #p-value
 ```
+The LRT statistic is given as, 
+$$
+  LRT = -2(l(\alpha_0) - l(\alpha_1)),
+$$
+where $l(\cdots)$ is the loglikelihood function and $\alpha_0, \alpha_1$ are the parameter spaces for the restricted and full model, respectively. 
 
-For the test of significans of fixed effects the null hypotheses is that all the betas are equal to zero. We therefor fitted a model without period (only intercept and random effects). This is our "small model". Then we extracted the loglikelihood for this model as well as for the full model ($H_1$) and used the formula for LRT test statistic. We get a very small p-value = $6.955269e-05$ so the nullhypotheses is rejected for level $0.05$. 
+For the test of significance of fixed effects the null hypotheses is that all the betas are equal to zero. We therefore fitted a model without period as a covariate, and thus included only intercept and random effects. This is our restricted model. Then we extracted the loglikelihood for this model as well as for the full model ($H_1$) and used the formula for the LRT statistic from above. We get a very small p-value = $1.303e-23$, so the nullhypotheses is rejected for level $0.05$. Thus, the fixed effects are significant.
 
-For the random effects we fitted a glm model without random effects (this is our "small" model) and used the likelihood for this model as well as for the full model to compute the LRT test statistic. The small model is in this case the null hypotheses. This is on the boundary of our parameter space. We then use the formula for computing the p value when the null hypotheses is on the boundary by using a mixture of the $\chi^2_0$ and the $\chi^2_1$ to get the correct p-value. We can see that we get a p-value = $0.0003192463$ so we reject $H_0$ and keep the random effects.   
+For the random effects we fitted a glm without random effects, which in this case is the restricted model, and used the likelihood for this model as well as for the full model to compute the LRT statistic. The null hypotheses in this case is the restricted model. This is on the boundary of our parameter space. We then use the formula for computing the p-value when the null hypotheses is on the boundary by using a mixture of the $\chi^2_0$ and the $\chi^2_1$. We then get a p-value = $2.041e-23$, so we reject $H_0$ and thus the random effects are significant. 
 
 ###f)
 We want to calculate the ratio between the odds that cattle develop CBPP wihtin a given herd for period 2 relative to period 1. We also want to calculate this odds-ratio for the changing in the incidence of CBPP on the level of all herds.
@@ -272,37 +278,43 @@ odds_ratio = exp(beta_new)
 odds_ratio
 
 ```
-The effect on the log-odds is linear if we have a one unit change in the period. Hence, when changing the period with one unit, the effect on the odds is multiplicative. Thus, the ratio between odds for a given herd is 0.379 and the ratio for all herds is 0.402. This tells us that for a given herd there is a larger change in the odds, than for the whole population. 
+
+The effect on the log-odds is additive, meaning if we have a one unit change in the $period_i$ the change in the log-odds will be $\beta_i$. Hence, if we have a one unit change, the effect on the odds is multiplicative by a factor $exp(\beta_i)$. Thus, the ratio between odds for period 2 relative to period 1 for a given herd is 0.379 and the ratio for all herds is 0.401. This tells us that for a given herd there is a larger change in the odds-ratio/odds????, than for the whole population. 
+HAR SPURT OM DETTE; men er fortsatt usikker på den siste setningen der...
 
 ###g)
-Based on the estimated model we use simulations to find a numerical estimate of the intraclass correlation between the incidence of CBPP for a herd with fixed size 20 for period 1 and period 2.
+Based on the estimated model we use simulations to find a numerical estimate of the intraclass correlation between the incidence of CBPP for a herd, with fixed size 20, in period 1 and period 2.
 
 ```{r}
 #Extract tau from model
-b=summary(mod_reml)
-tau = b$varcor$cond$herd[1]
+tau = summary(mod_reml)$varcor$cond$herd[1]
 size = 20
 
 set.seed(100)
-#simulate 1000 gammas from this normal distribution
-gammas = rnorm(1000, 0, tau) #skal denne være roten av??? Jarle skrev N(0, T_0^2)
-#gammas
+#Simulate 1000 gammas from this normal distribution
+gammas = rnorm(1000, 0, tau^{1/2}) 
+
 #Period 1
 pi_logit_1 = beta[1]  + gammas
 
-#period 2
+#Period 2
 pi_logit_2= beta[1] + beta[2] + gammas
 
-#get the numbers for new insidences
+#Get the numbers for new incidences
 pi_1 =  exp(pi_logit_1)/(1 + exp(pi_logit_1))
 pi_2 =  exp(pi_logit_2)/(1 + exp(pi_logit_2))
 
-Y_1 = dbinom(1, 20, pi_1)
-Y_2 = dbinom(1, 20, pi_2)
-#mangler å trekke y fra bin men 20, pi
-#find the correlation
+Y_1 = ex_fin_rank =rep(0,length(pi_1))
+Y_2 = ex_fin_rank =rep(0,length(pi_1))
+
+for (i in (1:length(pi_1))){
+  Y_1[i] = rbinom(1, 20, pi_1[i])
+  Y_2[i] = rbinom(1, 20, pi_2[i])
+}
+
+#Find the correlation
 cor(Y_1, Y_2)
 
 ```
-By simulating a thousand realisations of gammas and then computing the corresponding responses for a herd with fixed size 20 we compute the intraclass correlation between period one and two. We get a very high correlation ($0.9908$). This means that the results from period one and two resemble each other a lot. This suggests that the random variable is of great importance. 
+By simulating a thousand realisations of gammas and then computing the corresponding responses for a herd with fixed size 20, we compute the intraclass correlation between period one and two. We get a correlation of $0.5428177$, which is a moderate to strong correlation. 
 
