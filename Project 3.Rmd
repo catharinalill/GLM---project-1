@@ -278,8 +278,24 @@ odds_ratio = exp(beta_new)
 odds_ratio
 
 ```
+<!--
+The effect on the log-odds is additive, meaning if we have a one unit change in the $period_i$ the change in the log-odds will be $\beta_i$. Hence, if we have a one unit change, the effect on the odds is multiplicative by a factor $exp(\beta_i)$.
+--> 
+The odds for period $j$ is given as
+$$
+  odds_j = \frac{\pi_{j}}{1-\pi_{j}} = \exp(\eta_j). 
+$$
+For a given herd, which means in the conditional case, the odds-ratio of period 2 relative to period 1 is given as
+$$
+  \frac{odds_2}{odds_1} = \frac{\exp(\beta_0 +\beta_2 +\gamma_{0i})}{\exp(\beta_0 + \gamma_{0i})} = \exp(\beta_2)
+$$
 
-The effect on the log-odds is additive, meaning if we have a one unit change in the $period_i$ the change in the log-odds will be $\beta_i$. Hence, if we have a one unit change, the effect on the odds is multiplicative by a factor $exp(\beta_i)$. Thus, the ratio between odds for period 2 relative to period 1 for a given herd is 0.379 and the ratio for all herds is 0.401. This tells us that for a given herd there is a larger change in the odds-ratio/odds????, than for the whole population. 
+In the marginal case, we use an approximation and get a scaled estimate for the regression coefficients $\beta* = c\beta$, where $c = [1+0.6\tau_0^2]^{-1/2}$. Hence, the odds-ratio get 
+$$
+  \frac{odds_2}{odds_1} = \exp(c\beta_2). 
+$$
+
+The ratio between odds for period 2 relative to period 1 for a given herd is 0.379 and the ratio for all herds is 0.401. This tells us that for a given herd there is a larger change in the odds-ratio/odds????, than for the whole population. 
 HAR SPURT OM DETTE; men er fortsatt usikker på den siste setningen der...
 
 ###g)
