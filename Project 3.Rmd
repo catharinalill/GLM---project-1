@@ -213,12 +213,12 @@ mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=b
 
 summary(mod_laplace)
 ```
-By comparing the summaries of the two fitted models, we can see only slightly changes in some of the estimates. For example the estimate of $\tau_0^2$ is a bit lower for the model fitted by using 10 quadratures points compared to the refitted model. Also the estimates for $\beta$ are slightly changed. 
+By comparing the summaries of the two fitted models, we can see only slightly changes in some of the estimates. For example the estimate of $\tau_0^2$ is a bit larger for the model fitted by using 10 quadratures points compared to the refitted model. Also the estimates for $\beta$ are slightly changed. 
 
 ###d)
 We now refit the model by maximising the Laplace approximation of the REML likelihood. 
 ```{r}
-#refitt model with REML
+#Refit the  model with REML
 library(glmmTMB)
 mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=TRUE)
 
@@ -226,6 +226,7 @@ summary(mod_reml)
 ```
 As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. This is due to that fitting the model with REML gives a less biased variance. Hence, $\tau_0^2$ should be closer to its actual value. When fitting with maximum likelihood the variance get more biased and is underfitted. Hence, as expect the estimate for $\tau_0^2$ get a bit larger when using restricted maximum likelihood instead of maximum likelihood. 
 
+To further investigate if this estimate wiht REML is preferable over the maximum likelihood estimate we want to investigate the bias of $\tau_0^2$. We can then simulate draw many realisations from a known model with known parameters and then find an average value of these. 
 To further investigate if this estimate wiht REML is preferable over the maximum likelihood estimate we want to investigate if the bias actually is smaller. To do so one can simulate many realisations from a known model with known parameters to create many new datasets. Then one could fit all of these datasets again and retreve new estimates for $\tau$. Then one could compute the average of these $\tau$s and compare this to the original estimate. One would expect that the difference would be smaller when using REML versus ML.  
 
 How to further investigate ????
@@ -255,15 +256,8 @@ For the random effects we fitted a glm model without random effects (this is our
 ###f)
 We want to calculate the ratio between the odds that cattle develop CBPP wihtin a given herd for period 2 relative to period 1. We also want to calculate this odds-ratio for the changing in the incidence of CBPP on the level of all herds.
 ```{r}
-#herd: i
-#period : j
-#Hvilke modell skal vi bruke?
-x_new = data.frame(period = 1, herd = 1)
 beta = fixef(mod_reml)$cond 
 beta
-
-x_1 = c(1,0,0,0)
-x_2 = c(1,1,0,0)
 
 #Odds ratio for a given herd
 odds_ratio = exp(beta[2])
@@ -278,7 +272,7 @@ odds_ratio = exp(beta_new)
 odds_ratio
 
 ```
-The effect on the log-odds is linear if we have a one unit change in the period. Hence, when changing the period with one unit, the effect on the odds is multiplicative. Thus, the ratio between odds for a given herd is 0.379 and the ratio for all herds is 0.402. This tells us that for a given herd there is a larger change in the odds, then for the whole population. 
+The effect on the log-odds is linear if we have a one unit change in the period. Hence, when changing the period with one unit, the effect on the odds is multiplicative. Thus, the ratio between odds for a given herd is 0.379 and the ratio for all herds is 0.402. This tells us that for a given herd there is a larger change in the odds, than for the whole population. 
 
 ###g)
 Based on the estimated model we use simulations to find a numerical estimate of the intraclass correlation between the incidence of CBPP for a herd with fixed size 20 for period 1 and period 2.
@@ -291,8 +285,8 @@ b=summary(mod_reml)
 beta[2]
 beta[1]
 #Extract tau from model
+b=summary(mod_reml)
 tau = b$varcor$cond$herd[1]
-
 size = 20
 
 set.seed(100)
