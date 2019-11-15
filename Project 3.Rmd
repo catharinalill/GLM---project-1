@@ -278,12 +278,6 @@ The effect on the log-odds is linear if we have a one unit change in the period.
 Based on the estimated model we use simulations to find a numerical estimate of the intraclass correlation between the incidence of CBPP for a herd with fixed size 20 for period 1 and period 2.
 
 ```{r}
-#bruker beta fra tidligere i oppgaven
-beta
-b=summary(mod_reml)
-
-beta[2]
-beta[1]
 #Extract tau from model
 b=summary(mod_reml)
 tau = b$varcor$cond$herd[1]
@@ -293,21 +287,21 @@ set.seed(100)
 #simulate 1000 gammas from this normal distribution
 gammas = rnorm(1000, 0, tau) #skal denne være roten av??? Jarle skrev N(0, T_0^2)
 #gammas
-#perios 1
-pi_logit_en = beta[1]  + gammas
+#Period 1
+pi_logit_1 = beta[1]  + gammas
 
 #period 2
-pi_logit_to= beta[1] + beta[2] + gammas
+pi_logit_2= beta[1] + beta[2] + gammas
 
 #get the numbers for new insidences
-pi_en =  exp(pi_log_en)/(1 + exp(pi_log_en))
-pi_to =  exp(pi_log_to)/(1 + exp(pi_log_to))
+pi_1 =  exp(pi_logit_1)/(1 + exp(pi_logit_1))
+pi_2 =  exp(pi_logit_2)/(1 + exp(pi_logit_2))
 
-Y_en = dbinom(1, 20, pi_en)
-Y_to = dbinom(1, 20, pi_to)
+Y_1 = dbinom(1, 20, pi_1)
+Y_2 = dbinom(1, 20, pi_2)
 #mangler å trekke y fra bin men 20, pi
 #find the correlation
-cor(Y_en, Y_to)
+cor(Y_1, Y_2)
 
 ```
 By simulating a thousand realisations of gammas and then computing the corresponding responses for a herd with fixed size 20 we compute the intraclass correlation between period one and two. We get a very high correlation ($0.9908$). This means that the results from period one and two resemble each other a lot. This suggests that the random variable is of great importance. 
