@@ -191,7 +191,12 @@ plot(nAGQ, intercept, log = "y", type = "l", col = "blue", ylab = "error")
 
 ```
    
-By testing different number of quadrature points we see that 10 seems to be enough for the estimates of $\beta$ to stabilize. 
+By testing different number of quadrature points we see that from around 6 quadrature points we get a numerical low enough error. This error will be much lower than the statistical error and is therefor good enough. 
+
+10 seems to be enough for the estimates of $\beta$ to stabilize. 
+
+
+nok fra 6 frodi numerisk fei my emindre en statistisk 
 
 ```{r}
 #Fit the model with 10 quadrature points
@@ -221,21 +226,24 @@ summary(mod_reml)
 ```
 As we can see from the summary output above, the estimate of $\tau_0^2$ is a bit larger than for the previous models. This is due to that fitting the model with REML gives a less biased variance. Hence, $\tau_0^2$ should be closer to its actual value. When fitting with maximum likelihood the variance get more biased and is underfitted. Hence, as expect the estimate for $\tau_0^2$ get a bit larger when using restricted maximum likelihood instead of maximum likelihood. 
 
-To further investigate if this estimate wiht REML is preferable over the maximum likelihood estimate we want to investigate the bias . can simulate draw many realisations from a known model with known parameters and then find an average value of these. 
+To further investigate if this estimate wiht REML is preferable over the maximum likelihood estimate we want to investigate if the bias actually is smaller. To do so one can simulate many realisations from a known model with known parameters to create many new datasets. Then one could fit all of these datasets again and retreve new estimates for $\tau$. Then one could compute the average of these $\tau$s and compare this to the original estimate. One would expect that the difference would be smaller when using REML versus ML.  
+
 How to further investigate ????
+
+kjente param, simuler gammaer og yer gitt simulerte gammaer så får man mange real av datasett 
 
 ###e)
 We test the significance of the random and fixed effects in the model using likelihood ratio tests and compute the associated p-values of the tests. 
 ```{r}
 #Test for fixed effects
-modfixed <- glmmTMB(cbind(incidence, size-incidence)~1 +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=TRUE)
-test1 = -2*(logLik(modfixed)-logLik(mod_reml))
+modfixed <- glmmTMB(cbind(incidence, size-incidence)~1 +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=FALSE)
+test1 = -2*(logLik(modfixed)-logLik(mod))
 p_1 = pchisq(test1, df=4, lower.tail=FALSE)
 p_1 #p-value
 
 #Test for random effects
 modrandom <-glm(cbind(incidence, size-incidence)~period, family=binomial(link = "logit"),data = cbpp)
-test2=-2*(logLik(modrandom)-logLik(mod_reml))
+test2=-2*(logLik(modrandom)-logLik(mod))
 p_2 = 0.5*(pchisq(test2, df=0, lower.tail=FALSE)+pchisq(test2, df=1, lower.tail=FALSE))
 p_2 #p-value
 ```
@@ -277,7 +285,7 @@ Based on the estimated model we use simulations to find a numerical estimate of 
 
 ```{r}
 #bruker beta fra tidligere i oppgaven
-
+beta
 b=summary(mod_reml)
 
 beta[2]
@@ -289,21 +297,24 @@ size = 20
 
 set.seed(100)
 #simulate 1000 gammas from this normal distribution
-gammas = rnorm(1000, 0, tau**0.5) #skal denne være i annne 
+gammas = rnorm(1000, 0, tau) #skal denne være roten av??? Jarle skrev N(0, T_0^2)
 #gammas
 #perios 1
-pi_log_en = beta[1]  + gammas
+pi_logit_en = beta[1]  + gammas
 
 #period 2
-pi_log_to= beta[1] + beta[2] + gammas
+pi_logit_to= beta[1] + beta[2] + gammas
 
 #get the numbers for new insidences
-Y_real_en = size* exp(pi_log_en)/(1 + exp(pi_log_en))
-Y_real_to = size* exp(pi_log_to)/(1 + exp(pi_log_to))
+pi_en =  exp(pi_log_en)/(1 + exp(pi_log_en))
+pi_to =  exp(pi_log_to)/(1 + exp(pi_log_to))
 
+Y_en = dbinom(1, 20, pi_en)
+Y_to = dbinom(1, 20, pi_to)
+#mangler å trekke y fra bin men 20, pi
 #find the correlation
-cor(Y_real_en, Y_real_to)
+cor(Y_en, Y_to)
 
 ```
-By simulating a thousand realisations of gammas and then computing the corresponding responses for a herd with fixed size 20 we compute the intraclass correlation between period one and two. We get a very high correlation ($0.9914$). This means that the results from period one and two resemble each other a lot. This suggests that the random variable is of great importance. 
+By simulating a thousand realisations of gammas and then computing the corresponding responses for a herd with fixed size 20 we compute the intraclass correlation between period one and two. We get a very high correlation ($0.9908$). This means that the results from period one and two resemble each other a lot. This suggests that the random variable is of great importance. 
 
