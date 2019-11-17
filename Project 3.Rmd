@@ -190,6 +190,7 @@ nAGQ = c(1:n)
 plot(nAGQ, intercept, log = "y", type = "l", col = "blue", ylab = "difference")
 
 ```
+
 The plot above shows the absolute difference in parameter estimates, $|\beta_{k+1}-\beta_k|$, against number of quandrature points. From this we can see that around 6 quadrature points gives a low numerical error. This error will be much lower than the statistical error and is therefore good enough. Moreover after 13 quadrature points adding more points does not give any change in parameter estimates.
 
 <!--
