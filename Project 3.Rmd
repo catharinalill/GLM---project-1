@@ -299,10 +299,19 @@ $$
 The ratio between odds for period 2 relative to period 1 for a given herd is 0.379 and the ratio for all herds is 0.401. This tells us that for a given herd there is a larger change in the odds-ratio/odds????, than for the whole population. 
 HAR SPURT OM DETTE; men er fortsatt usikker på den siste setningen der...
 
+In both cases we can see that the odds of a cattle developing CBPP is higher in period 2 than in period 1. However when calculating the oddsratio considdering all herds the ratio between the odds for obtaining CBPP in period 1 vs period two is the higher than the conditionlal oddsratio. 
+
+
 ###g)
 Based on the estimated model we use simulations to find a numerical estimate of the intraclass correlation between the incidence of CBPP for a herd, with fixed size 20, in period 1 and period 2.
 
 ```{r}
+#bruker beta fra tidligere i oppgaven
+beta
+b=summary(mod_reml)
+
+beta[2]
+beta[1]
 #Extract tau from model
 tau = summary(mod_reml)$varcor$cond$herd[1]
 size = 20
