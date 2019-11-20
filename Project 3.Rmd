@@ -2,7 +2,7 @@
 title: "Project 3"
 author: "Aurora Hofman, Camilla Karlsen, Catharina Lilleengen"
 date: "`r format(Sys.time(), '%d.%m.%Y')`"
-output: html_document
+output: pdf_document
 ---
 
 #Problem 1 
@@ -110,7 +110,8 @@ mylmm <- function(y, group,REML = FALSE){
 mylmm(y,group, REML = FALSE)
 lmer(y ~ (1|group), REML=FALSE) 
 
-#Check the estimates against computed values by lmer fitted with restricted maximum likelihood
+#Check the estimates against computed values by lmer fitted 
+#with restricted maximum likelihood
 mylmm(y,group, REML=TRUE)
 lmer(y ~ (1|group), REML=TRUE)
 
@@ -172,11 +173,13 @@ We now want to fit the model by computing the marginal likelihood using Gauss-He
 
 ```{r}
 library(lme4)
-#Compute the marginal likelihood using Gauss-Hermite quadrature for different number of quadrature points, specified with the nAGQ-argument. 
+#Compute the marginal likelihood using Gauss-Hermite quadrature for different number
+# of quadrature points, specified with the nAGQ-argument. 
 n = 13
 intercept = rep(0,n)
 for (i in 1:n) {
-  mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = i, data = cbpp)
+  mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd),
+               family=binomial(link = "logit"), nAGQ = i, data = cbpp)
   intercept_n = fixef(mod)[1]
   
   if (i > 1) {
@@ -200,7 +203,8 @@ nok fra 6 frodi numerisk fei my emindre en statistisk
 
 ```{r}
 #Fit the model with 6 quadrature points
-mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), nAGQ = 6, data = cbpp)
+mod <- glmer(cbind(incidence, size-incidence)~period +(1|herd), 
+             family=binomial(link = "logit"), nAGQ = 6, data = cbpp)
 
 summary(mod)
 ```
@@ -209,7 +213,8 @@ summary(mod)
 Here we want to refit the model by maximising the Laplace approximation of the marginal likelihood. This is done by using $nAGQ = 1$ which is the default for glmer. 
 ```{r}
 #Refitting model using Laplace
-mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp)
+mod_laplace <- glmer(cbind(incidence, size-incidence)~period +(1|herd),
+                     family=binomial(link = "logit"), data = cbpp)
 
 summary(mod_laplace)
 ```
@@ -220,7 +225,8 @@ We now refit the model by maximising the Laplace approximation of the restricted
 ```{r}
 #Refit the  model with REML
 library(glmmTMB)
-mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=TRUE)
+mod_reml <- glmmTMB(cbind(incidence, size-incidence)~period +(1|herd),
+                    family=binomial(link = "logit"), data = cbpp, REML=TRUE)
 
 summary(mod_reml)
 ```
@@ -239,13 +245,15 @@ kjente param, simuler gammaer og yer gitt simulerte gammaer så får man mange r
 We test the significance of the random and fixed effects in the model using likelihood ratio tests and compute the associated p-values of the tests. 
 ```{r}
 #Test for fixed effects
-modfixed <- glmmTMB(cbind(incidence, size-incidence)~1 +(1|herd), family=binomial(link = "logit"), data = cbpp, REML=FALSE)
+modfixed <- glmmTMB(cbind(incidence, size-incidence)~1 +(1|herd),
+                    family=binomial(link = "logit"), data = cbpp, REML=FALSE)
 test1 = -2*(logLik(modfixed)-logLik(mod))
 p_1 = pchisq(test1, df=3, lower.tail=FALSE)
 p_1 #p-value
 
 #Test for random effects
-modrandom <-glm(cbind(incidence, size-incidence)~period, family=binomial(link = "logit"),data = cbpp)
+modrandom <-glm(cbind(incidence, size-incidence)~period, 
+                family=binomial(link = "logit"),data = cbpp)
 test2=-2*(logLik(modrandom)-logLik(mod))
 p_2 = 0.5*(pchisq(test2, df=0, lower.tail=FALSE)+pchisq(test2, df=1, lower.tail=FALSE))
 p_2 #p-value
@@ -306,12 +314,6 @@ In both cases we can see that the odds of a cattle developing CBPP is higher in 
 Based on the estimated model we use simulations to find a numerical estimate of the intraclass correlation between the incidence of CBPP for a herd, with fixed size 20, in period 1 and period 2.
 
 ```{r}
-#bruker beta fra tidligere i oppgaven
-beta
-b=summary(mod_reml)
-
-beta[2]
-beta[1]
 #Extract tau from model
 tau = summary(mod_reml)$varcor$cond$herd[1]
 size = 20
